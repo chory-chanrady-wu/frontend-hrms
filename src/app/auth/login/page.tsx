@@ -102,10 +102,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-950 px-4 py-12">
       <div className="max-w-md w-full">
-        
         {/* Login Form Card */}
         <div className="rounded-2xl shadow-2xl p-8 backdrop-blur-xl bg-white">
-            <h1 className="text-3xl font-bold text-gray-700 mb-6 text-center">HR Management System</h1>
+          <h1 className="text-3xl font-bold text-gray-700 mb-6 text-center">
+            HR Management System
+          </h1>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Error */}
             {generalError && (

@@ -1,0 +1,29 @@
+name: GitHub Actions
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: code format fixting
+        run: pnpm run format:fix
+
+      - name: Check code formatting
+        run: pnpm run format:check
+
+      - name: Run build
+        run: pnpm run build

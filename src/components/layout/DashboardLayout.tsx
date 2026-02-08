@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -9,16 +10,18 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <Header />
-      <div className="mx-auto flex w-full max-w-screen-2xl gap-6 px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-        <aside className="hidden w-64 shrink-0 md:block">
-          <Sidebar />
-        </aside>
-        <main className="flex-1 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
+        <Sidebar />
+        <SidebarInset>
+          <Header />
+          <div>
+            <main className="px-6 py-2">
+              {children}
+            </main>
+          </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

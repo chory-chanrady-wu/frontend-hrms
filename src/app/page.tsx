@@ -1,10 +1,5 @@
-import Link from "next/link";
-import "../styles/globals.css";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="container">
-
-    </div>
-  );
+  redirect("/auth/login");
 }
