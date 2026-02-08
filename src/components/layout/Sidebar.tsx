@@ -180,7 +180,7 @@ export default function SidebarNavigation() {
             {/* Section Label Trigger */}
             <button
               onClick={() => toggleSection(section.title)}
-              className="flex w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest text-white/50 transition-colors hover:text-white/70"
+              className="flex rounded-md w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest bg-slate-900 text-white transition-colors hover:text-white/70"
             >
               {section.title}
               <ChevronDown
