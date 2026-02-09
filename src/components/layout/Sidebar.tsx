@@ -171,7 +171,9 @@ export default function SidebarNavigation() {
       <SidebarContent className="gap-0">
         {/* Logo */}
         <div className="px-4 py-6">
-          <h1 className="text-2xl font-bold text-white tracking-wide text-center">HRMS</h1>
+          <h1 className="text-2xl font-bold text-white tracking-wide text-center">
+            HRMS
+          </h1>
         </div>
 
         {/* Navigation Groups */}
@@ -180,7 +182,7 @@ export default function SidebarNavigation() {
             {/* Section Label Trigger */}
             <button
               onClick={() => toggleSection(section.title)}
-              className="flex rounded-md w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest bg-slate-900 text-white transition-colors hover:text-white/70"
+              className="flex rounded-md w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest bg-white/80 text-black transition-colors hover:text-white hover:bg-white/20 mb-1"
             >
               {section.title}
               <ChevronDown
