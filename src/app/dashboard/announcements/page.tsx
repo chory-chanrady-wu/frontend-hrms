@@ -90,7 +90,11 @@ export default function AnnouncementsPage() {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      {new Date(announcement.date).toLocaleDateString()}
+                      {new Date(announcement.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
                     </span>
                   </div>
                 </div>

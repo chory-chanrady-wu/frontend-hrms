@@ -2,38 +2,13 @@
 
 import { DollarSign, Calendar, FileText, Download } from "lucide-react";
 import Link from "next/link";
-
-const payrollRecords = [
-  {
-    id: 1,
-    month: "January 2026",
-    period: "2026-01-01 to 2026-01-31",
-    totalEmployees: 248,
-    totalAmount: "$1,245,800",
-    status: "Processed",
-    processedDate: "2026-02-01",
-  },
-  {
-    id: 2,
-    month: "December 2025",
-    period: "2025-12-01 to 2025-12-31",
-    totalEmployees: 245,
-    totalAmount: "$1,232,500",
-    status: "Processed",
-    processedDate: "2026-01-01",
-  },
-  {
-    id: 3,
-    month: "November 2025",
-    period: "2025-11-01 to 2025-11-30",
-    totalEmployees: 242,
-    totalAmount: "$1,218,400",
-    status: "Processed",
-    processedDate: "2025-12-01",
-  },
-];
+import { useGetAllPayroll, useDeletePayroll } from "@/hooks/payroll-query";
 
 export default function PayrollPage() {
+  const { data: payroll, isLoading, error } = useGetAllPayroll();
+  const { mutate: deletePayroll } = useDeletePayroll();
+
+  const payrollList = payroll?.data || [];
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -87,82 +62,111 @@ export default function PayrollPage() {
       </div>
 
       {/* Payroll Records */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Payroll History
-          </h2>
+      {isLoading && (
+        <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">
+          <p className="text-slate-600">Loading payroll...</p>
         </div>
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Period
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Employees
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Total Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Processed Date
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {payrollRecords.map((record) => (
-              <tr key={record.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-slate-900">
-                    {record.month}
-                  </div>
-                  <div className="text-xs text-slate-500">{record.period}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900">
-                    {record.totalEmployees}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-semibold text-slate-900">
-                    {record.totalAmount}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    {record.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-600">
-                    {record.processedDate}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end gap-2">
-                    <Link
-                      href={`/dashboard/payroll/${record.id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View
-                    </Link>
-                    <button className="text-slate-600 hover:text-slate-900">
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-600">
+            Error loading payroll. Please try again.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Payroll History
+            </h2>
+          </div>
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Employee ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Month
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Net Salary
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Basic Salary
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Bonus
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {payrollList.length > 0 ? (
+                payrollList.map((record: any) => (
+                  <tr key={record.id} className="hover:bg-slate-50">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-slate-900">
+                        {record.employeeId}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-900">
+                        {record.month}/{record.year}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-slate-900">
+                        ${record.netSalary.toLocaleString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-900">
+                        ${record.basicSalary.toLocaleString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        ${record.bonus.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          href={`/dashboard/payroll/${record.id}`}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          View
+                        </Link>
+                        <button
+                          onClick={() => deletePayroll(record.id)}
+                          className="text-slate-600 hover:text-slate-900"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-slate-500"
+                  >
+                    No payroll records found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

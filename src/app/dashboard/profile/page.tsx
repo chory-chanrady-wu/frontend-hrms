@@ -25,7 +25,7 @@ export default function ProfilePage() {
     <div>
       <h1 className="text-2xl font-bold text-slate-900 mb-6">My Profile</h1>
 
-      <div className="max-w-4xl">
+      <div className="max-w-full">
         {/* Profile Header */}
         <div className="bg-white border border-slate-200 rounded-lg p-8 mb-6">
           <div className="flex items-start gap-6">

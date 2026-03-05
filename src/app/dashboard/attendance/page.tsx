@@ -1,47 +1,16 @@
 "use client";
 
 import { Clock, Calendar, CheckCircle, XCircle } from "lucide-react";
-
-const attendanceData = [
-  {
-    id: 1,
-    name: "John Doe",
-    department: "Engineering",
-    checkIn: "08:45 AM",
-    checkOut: "05:30 PM",
-    status: "present",
-    date: "2026-02-08",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    department: "Marketing",
-    checkIn: "09:00 AM",
-    checkOut: "06:00 PM",
-    status: "present",
-    date: "2026-02-08",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    department: "Sales",
-    checkIn: "-",
-    checkOut: "-",
-    status: "absent",
-    date: "2026-02-08",
-  },
-  {
-    id: 4,
-    name: "Sarah Williams",
-    department: "HR",
-    checkIn: "08:30 AM",
-    checkOut: "05:15 PM",
-    status: "present",
-    date: "2026-02-08",
-  },
-];
+import {
+  useGetAllAttendance,
+  useDeleteAttendance,
+} from "@/hooks/attendance-query";
 
 export default function AttendancePage() {
+  const { data: attendance, isLoading, error } = useGetAllAttendance();
+  const { mutate: deleteAttendance } = useDeleteAttendance();
+
+  const attendanceList = attendance?.data || [];
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -102,64 +71,93 @@ export default function AttendancePage() {
       </div>
 
       {/* Attendance Table */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Employee
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Department
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Check In
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Check Out
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {attendanceData.map((record) => (
-              <tr key={record.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-slate-900">
-                    {record.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-600">
-                    {record.department}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-600">{record.checkIn}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-600">
-                    {record.checkOut}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      record.status === "present"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {record.status}
-                  </span>
-                </td>
+      {isLoading && (
+        <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">
+          <p className="text-slate-600">Loading attendance...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-600">
+            Error loading attendance. Please try again.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Employee ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Check In
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Check Out
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Status
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {attendanceList.length > 0 ? (
+                attendanceList.map((record: any) => (
+                  <tr key={record.id} className="hover:bg-slate-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-slate-900">
+                        {record.employeeId}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-600">
+                        {record.date}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-600">
+                        {record.checkInTime}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-600">
+                        {record.checkOutTime}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          record.status === "present"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {record.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-slate-500"
+                  >
+                    No attendance records found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

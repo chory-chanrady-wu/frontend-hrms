@@ -2,33 +2,47 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLogin } from "@/hooks/auth-query";
 import "../../../styles/globals.css";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { mutate: login, isPending: isLoading } = useLogin();
+
+  const [loginType, setLoginType] = useState<"email" | "username">("email");
   const [formData, setFormData] = useState({
     email: "",
+    username: "",
     password: "",
   });
   const [errors, setErrors] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [generalError, setGeneralError] = useState("");
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { email: "", password: "" };
+    const newErrors = { identifier: "", password: "" };
 
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-      isValid = false;
+    // Email/Username validation
+    if (loginType === "email") {
+      if (!formData.email) {
+        newErrors.identifier = "Email is required";
+        isValid = false;
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.identifier = "Please enter a valid email";
+        isValid = false;
+      }
+    } else {
+      if (!formData.username) {
+        newErrors.identifier = "Username is required";
+        isValid = false;
+      } else if (formData.username.length < 3) {
+        newErrors.identifier = "Username must be at least 3 characters";
+        isValid = false;
+      }
     }
 
     // Password validation
@@ -51,12 +65,20 @@ export default function LoginPage() {
       [name]: value,
     }));
     // Clear error when user starts typing
-    if (errors[name as keyof typeof errors]) {
+    if (errors.identifier || errors.password) {
       setErrors((prev) => ({
         ...prev,
-        [name]: "",
+        identifier: "",
+        password: "",
       }));
     }
+    setGeneralError("");
+  };
+
+  const handleLoginTypeChange = (type: "email" | "username") => {
+    setLoginType(type);
+    setFormData({ email: "", username: "", password: "" });
+    setErrors({ identifier: "", password: "" });
     setGeneralError("");
   };
 
@@ -68,35 +90,36 @@ export default function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
+    const credentials = {
+      [loginType]: loginType === "email" ? formData.email : formData.username,
+      password: formData.password,
+    };
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token or session data
+    login(credentials, {
+      onSuccess: (data: any) => {
+        // Store in localStorage
+        if (data.accessToken) {
+          localStorage.setItem("accessToken", data.accessToken);
+          // Store in cookies for middleware
+          document.cookie = `accessToken=${data.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+        }
+        if (data.refreshToken) {
+          localStorage.setItem("refreshToken", data.refreshToken);
+          document.cookie = `refreshToken=${data.refreshToken}; path=/; max-age=${30 * 24 * 60 * 60}`; // 30 days
+        }
+        // Backward compatibility
         if (data.token) {
           localStorage.setItem("token", data.token);
+          document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
         }
-        // Redirect to dashboard
         router.push("/dashboard");
-      } else {
-        setGeneralError(data.message || "Invalid email or password");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setGeneralError("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: (error: any) => {
+        setGeneralError(
+          error?.message || "Invalid login credentials. Please try again.",
+        );
+      },
+    });
   };
 
   return (
@@ -107,6 +130,33 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-700 mb-6 text-center">
             HR Management System
           </h1>
+
+          {/* Login Type Toggle */}
+          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+            <button
+              type="button"
+              onClick={() => handleLoginTypeChange("email")}
+              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                loginType === "email"
+                  ? "bg-blue-900 text-white"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Email
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLoginTypeChange("username")}
+              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                loginType === "username"
+                  ? "bg-blue-900 text-white"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Username
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Error */}
             {generalError && (
@@ -115,47 +165,67 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Email Field */}
+            {/* Email/Username Field */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor={loginType}
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email Address
+                {loginType === "email" ? "Email Address" : "Username"}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                    />
-                  </svg>
+                  {loginType === "email" ? (
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
+                  id={loginType}
+                  name={loginType}
+                  type={loginType === "email" ? "email" : "text"}
+                  autoComplete={loginType === "email" ? "email" : "username"}
+                  value={
+                    loginType === "email" ? formData.email : formData.username
+                  }
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-3 border ${
-                    errors.email
+                    errors.identifier
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                   } rounded-lg focus:outline-none focus:ring-2 transition-colors`}
-                  placeholder="you@example.com"
+                  placeholder={
+                    loginType === "email" ? "you@example.com" : "username"
+                  }
                 />
               </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              {errors.identifier && (
+                <p className="mt-1 text-sm text-red-600">{errors.identifier}</p>
               )}
             </div>
 
@@ -266,7 +336,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-900 hover:bg-blue-950 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <>
