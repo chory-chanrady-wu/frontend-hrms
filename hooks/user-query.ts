@@ -76,7 +76,7 @@ export const useCreateUser = () => {
       password: string;
       email: string;
       fullName: string;
-      phone: string;
+      phoneNumber: string;
     }) => usersApi.createUser(userData),
     onSuccess: () => {
       // Invalidate users list to refetch
@@ -104,7 +104,7 @@ export const useUpdateUser = () => {
         username: string;
         email: string;
         fullName: string;
-        phone: string;
+        phoneNumber: string;
       };
     }) => usersApi.updateUser(id, userData),
     onSuccess: (data, { id }) => {

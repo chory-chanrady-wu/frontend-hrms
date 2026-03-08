@@ -1,17 +1,239 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useGetEmployeeById, useDeleteEmployee } from "@/hooks/employee-query";
+import {
+  ArrowLeft,
+  Mail,
+  Briefcase,
+  Building2,
+  Calendar,
+  DollarSign,
+  Loader2,
+  Pencil,
+  Trash2,
+  User,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function EmployeeDetailPage() {
   const params = useParams();
-  const employeeId = params.id;
+  const router = useRouter();
+  const employeeId = Number(params.id);
+  const { data: employee, isLoading, isError } = useGetEmployeeById(employeeId);
+  const { mutate: deleteEmployee, isPending: isDeleting } = useDeleteEmployee();
+
+  const handleDelete = () => {
+    if (!confirm("Are you sure you want to delete this employee?")) return;
+    deleteEmployee(employeeId, {
+      onSuccess: () => router.push("/dashboard/employees"),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (isError || !employee) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-slate-500 dark:text-slate-400">
+          Employee not found.
+        </p>
+        <Link
+          href="/dashboard/employees"
+          className="text-blue-600 hover:underline mt-2 inline-block"
+        >
+          Back to Employees
+        </Link>
+      </div>
+    );
+  }
+
+  const emp: any = employee?.data ?? employee;
+
+  const statusColor =
+    emp.status === "active"
+      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+      : emp.status === "on_leave"
+        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
-        Employee Details
-      </h1>
-      <p className="text-slate-600">Employee ID: {employeeId}</p>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard/employees"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+          >
+            <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Employee Details
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href={`/dashboard/employees/${employeeId}/edit`}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+          >
+            <Pencil className="h-4 w-4" /> Edit
+          </Link>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm font-medium disabled:opacity-50"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Profile Card */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 text-center">
+          {emp.imageUrl ? (
+            <img
+              src={emp.imageUrl}
+              alt={emp.fullName || emp.username}
+              className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-slate-100 dark:border-slate-600"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+              <User className="h-10 w-10 text-slate-400 dark:text-slate-300" />
+            </div>
+          )}
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            {emp.fullName || emp.username || "N/A"}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            {emp.jobTitle || emp.positionName || "—"}
+          </p>
+          <span
+            className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColor}`}
+          >
+            {emp.status?.replace("_", " ") || "N/A"}
+          </span>
+        </div>
+
+        {/* Details */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              Employment Information
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <InfoRow
+                icon={<Mail className="h-4 w-4" />}
+                label="Email"
+                value={emp.email || "—"}
+              />
+              <InfoRow
+                icon={<Briefcase className="h-4 w-4" />}
+                label="Employment Type"
+                value={emp.employmentType || "—"}
+              />
+              <InfoRow
+                icon={<Building2 className="h-4 w-4" />}
+                label="Department"
+                value={emp.departmentName || "—"}
+              />
+              <InfoRow
+                icon={<Briefcase className="h-4 w-4" />}
+                label="Position"
+                value={emp.positionName || "—"}
+              />
+              <InfoRow
+                icon={<DollarSign className="h-4 w-4" />}
+                label="Salary"
+                value={
+                  emp.salary != null
+                    ? `$${Number(emp.salary).toLocaleString()}`
+                    : "—"
+                }
+              />
+              <InfoRow
+                icon={<Calendar className="h-4 w-4" />}
+                label="Hire Date"
+                value={
+                  emp.hireDate
+                    ? new Date(emp.hireDate).toLocaleDateString()
+                    : "—"
+                }
+              />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              System Information
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <InfoRow
+                icon={<User className="h-4 w-4" />}
+                label="Employee ID"
+                value={String(emp.id)}
+              />
+              <InfoRow
+                icon={<User className="h-4 w-4" />}
+                label="User ID"
+                value={String(emp.userId)}
+              />
+              <InfoRow
+                icon={<Calendar className="h-4 w-4" />}
+                label="Created"
+                value={
+                  emp.createdAt
+                    ? new Date(emp.createdAt).toLocaleDateString()
+                    : "—"
+                }
+              />
+              <InfoRow
+                icon={<Calendar className="h-4 w-4" />}
+                label="Updated"
+                value={
+                  emp.updatedAt
+                    ? new Date(emp.updatedAt).toLocaleDateString()
+                    : "—"
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="text-slate-400 dark:text-slate-500 mt-0.5">{icon}</div>
+      <div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }

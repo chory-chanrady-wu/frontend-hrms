@@ -3,6 +3,11 @@ export const logout = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("employeeId");
+  localStorage.removeItem("username");
+  localStorage.removeItem("fullName");
+  localStorage.removeItem("email");
 
   // Clear cookies
   document.cookie =

@@ -97,7 +97,7 @@ export default function LoginPage() {
 
     login(credentials, {
       onSuccess: (data: any) => {
-        // Store in localStorage
+        // Store tokens in localStorage
         if (data.accessToken) {
           localStorage.setItem("accessToken", data.accessToken);
           // Store in cookies for middleware
@@ -112,6 +112,32 @@ export default function LoginPage() {
           localStorage.setItem("token", data.token);
           document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
         }
+
+        // Store user identity for profile & other pages
+        if (data.userId) localStorage.setItem("userId", String(data.userId));
+        if (data.employeeId)
+          localStorage.setItem("employeeId", String(data.employeeId));
+        if (data.id) localStorage.setItem("userId", String(data.id));
+        if (data.username) localStorage.setItem("username", data.username);
+        if (data.fullName) localStorage.setItem("fullName", data.fullName);
+        if (data.email) localStorage.setItem("email", data.email);
+
+        // Fallback: decode JWT to extract userId if not in response body
+        const token = data.accessToken || data.token;
+        if (token && !data.userId && !data.employeeId && !data.id) {
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            if (payload.userId)
+              localStorage.setItem("userId", String(payload.userId));
+            if (payload.employeeId)
+              localStorage.setItem("employeeId", String(payload.employeeId));
+            if (payload.sub)
+              localStorage.setItem("userId", String(payload.sub));
+          } catch {
+            // ignore decode errors
+          }
+        }
+
         router.push("/dashboard");
       },
       onError: (error: any) => {

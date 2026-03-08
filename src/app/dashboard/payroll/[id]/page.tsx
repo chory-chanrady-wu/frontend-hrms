@@ -1,104 +1,150 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-
-const payrollDetails = {
-  id: "1",
-  month: "January 2026",
-  period: "2026-01-01 to 2026-01-31",
-  totalEmployees: 248,
-  totalAmount: "$1,245,800",
-  status: "Processed",
-  processedDate: "2026-02-01",
-  breakdown: [
-    { category: "Base Salary", amount: "$1,120,000" },
-    { category: "Bonuses", amount: "$85,000" },
-    { category: "Allowances", amount: "$65,800" },
-    { category: "Tax Deductions", amount: "-$25,000" },
-  ],
-};
+import { useGetPayrollById } from "@/hooks/payroll-query";
 
 export default function PayrollDetailPage() {
   const params = useParams();
+  const payrollId = Number(params.id);
+  const {
+    data: payrollResponse,
+    isLoading,
+    error,
+  } = useGetPayrollById(payrollId);
+
+  const payroll = payrollResponse?.data || payrollResponse;
+
+  const monthNames = [
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/dashboard/payroll"
-          className="p-2 hover:bg-slate-100 rounded-lg transition"
+          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
         >
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
+          <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-400" />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Payroll Details</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Payroll Details
+        </h1>
       </div>
 
-      <div className="max-w-4xl">
-        {/* Summary Card */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">
-                {payrollDetails.month}
-              </h2>
-              <p className="text-sm text-slate-600">{payrollDetails.period}</p>
-            </div>
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-              <Download className="h-4 w-4" />
-              Download Report
-            </button>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <div>
-              <p className="text-sm text-slate-600 mb-1">Total Employees</p>
-              <p className="text-2xl font-bold text-slate-900">
-                {payrollDetails.totalEmployees}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 mb-1">Total Amount</p>
-              <p className="text-2xl font-bold text-green-600">
-                {payrollDetails.totalAmount}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 mb-1">Status</p>
-              <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                {payrollDetails.status}
-              </span>
-            </div>
-          </div>
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
+      )}
 
-        {/* Breakdown */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Payment Breakdown
-          </h3>
-          <div className="space-y-3">
-            {payrollDetails.breakdown.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-3 border-b border-slate-200 last:border-0"
-              >
-                <span className="text-slate-700">{item.category}</span>
-                <span
-                  className={`font-semibold ${
-                    item.amount.startsWith("-")
-                      ? "text-red-600"
-                      : "text-slate-900"
-                  }`}
-                >
-                  {item.amount}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <p className="text-red-600 dark:text-red-400">
+            Error loading payroll details.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && payroll && (
+        <div className="max-w-4xl">
+          {/* Summary Card */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 mb-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  {monthNames[payroll.month] || payroll.month} {payroll.year}
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Employee #{payroll.employeeId}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  Net Salary
+                </p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  ${payroll.netSalary?.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  Basic Salary
+                </p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  ${payroll.basicSalary?.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  Period
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  {monthNames[payroll.month]} {payroll.year}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Breakdown */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              Payment Breakdown
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-slate-700 dark:text-slate-300">
+                  Basic Salary
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  ${payroll.basicSalary?.toLocaleString()}
                 </span>
               </div>
-            ))}
+              <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-slate-700 dark:text-slate-300">
+                  Bonus
+                </span>
+                <span className="font-semibold text-green-600 dark:text-green-400">
+                  +${payroll.bonus?.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-slate-700 dark:text-slate-300">
+                  Deductions
+                </span>
+                <span className="font-semibold text-red-600 dark:text-red-400">
+                  -${payroll.deductions?.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  Net Salary
+                </span>
+                <span className="font-bold text-lg text-green-600 dark:text-green-400">
+                  ${payroll.netSalary?.toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

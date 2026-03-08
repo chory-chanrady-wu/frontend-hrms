@@ -1,10 +1,30 @@
+import type { ApiResponse } from "./types";
+import { getAccessToken } from "./auth";
+
 const API_BASE_URL = "http://localhost:7777/api/v1";
 
-interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data?: T;
-}
+const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const token = getAccessToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
+const handleResponse = async (response: Response) => {
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
+    throw new Error(
+      error.message || `Request failed with status ${response.status}`,
+    );
+  }
+  return response.json();
+};
 
 // ==================== AUTH ====================
 export const authApi = {
@@ -16,7 +36,7 @@ export const authApi = {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(credentials),
       });
 
@@ -44,46 +64,46 @@ export const usersApi = {
     password: string;
     email: string;
     fullName: string;
-    phone: string;
+    phoneNumber: string;
   }) => {
     const response = await fetch(`${API_BASE_URL}/users`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(userData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllUsers: async () => {
     const response = await fetch(`${API_BASE_URL}/users`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getUserById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getUserByUsername: async (username: string) => {
     const response = await fetch(`${API_BASE_URL}/users/username/${username}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getUserByEmail: async (email: string) => {
     const response = await fetch(`${API_BASE_URL}/users/email/${email}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateUser: async (
@@ -92,23 +112,23 @@ export const usersApi = {
       username: string;
       email: string;
       fullName: string;
-      phone: string;
+      phoneNumber: string;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(userData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteUser: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -117,34 +137,34 @@ export const rolesApi = {
   createRole: async (roleData: { roleName: string; permissions: string }) => {
     const response = await fetch(`${API_BASE_URL}/roles`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(roleData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllRoles: async () => {
     const response = await fetch(`${API_BASE_URL}/roles`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getRoleById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/roles/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getRoleByName: async (name: string) => {
     const response = await fetch(`${API_BASE_URL}/roles/name/${name}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateRole: async (
@@ -156,18 +176,18 @@ export const rolesApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/roles/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(roleData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteRole: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/roles/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -176,34 +196,34 @@ export const departmentsApi = {
   createDepartment: async (deptData: { name: string; description: string }) => {
     const response = await fetch(`${API_BASE_URL}/departments`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(deptData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllDepartments: async () => {
     const response = await fetch(`${API_BASE_URL}/departments`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getDepartmentById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getDepartmentByName: async (name: string) => {
     const response = await fetch(`${API_BASE_URL}/departments/name/${name}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateDepartment: async (
@@ -215,18 +235,18 @@ export const departmentsApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(deptData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteDepartment: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -240,26 +260,26 @@ export const positionsApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/positions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(posData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllPositions: async () => {
     const response = await fetch(`${API_BASE_URL}/positions`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getPositionById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/positions/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getPositionsByDepartment: async (departmentId: number) => {
@@ -267,10 +287,10 @@ export const positionsApi = {
       `${API_BASE_URL}/positions/department/${departmentId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   updatePosition: async (
@@ -284,18 +304,18 @@ export const positionsApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/positions/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(posData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deletePosition: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/positions/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -312,26 +332,26 @@ export const employeesApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/employees`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(empData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllEmployees: async () => {
     const response = await fetch(`${API_BASE_URL}/employees`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getEmployeeById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getEmployeesByDepartment: async (departmentId: number) => {
@@ -339,18 +359,18 @@ export const employeesApi = {
       `${API_BASE_URL}/employees/department/${departmentId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   getEmployeesByStatus: async (status: string) => {
     const response = await fetch(`${API_BASE_URL}/employees/status/${status}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateEmployee: async (
@@ -367,31 +387,33 @@ export const employeesApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(empData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   uploadEmployeeImage: async (id: number, file: File) => {
     const formData = new FormData();
     formData.append("image", file);
+    const token = getAccessToken();
     const response = await fetch(
       `${API_BASE_URL}/employees/${id}/upload-image`,
       {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteEmployee: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -406,26 +428,26 @@ export const attendanceApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/attendance`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(attData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllAttendance: async () => {
     const response = await fetch(`${API_BASE_URL}/attendance`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAttendanceById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/attendance/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAttendanceByEmployee: async (employeeId: number) => {
@@ -433,10 +455,10 @@ export const attendanceApi = {
       `${API_BASE_URL}/attendance/employee/${employeeId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   updateAttendance: async (
@@ -451,18 +473,18 @@ export const attendanceApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/attendance/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(attData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteAttendance: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/attendance/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -475,34 +497,34 @@ export const leaveTypesApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/leave-types`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(ltData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllLeaveTypes: async () => {
     const response = await fetch(`${API_BASE_URL}/leave-types`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getLeaveTypeById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/leave-types/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getLeaveTypeByName: async (name: string) => {
     const response = await fetch(`${API_BASE_URL}/leave-types/name/${name}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateLeaveType: async (
@@ -515,18 +537,18 @@ export const leaveTypesApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/leave-types/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(ltData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteLeaveType: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/leave-types/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -542,26 +564,26 @@ export const leaveRequestsApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/leave-requests`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(lrData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllLeaveRequests: async () => {
     const response = await fetch(`${API_BASE_URL}/leave-requests`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getLeaveRequestById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/leave-requests/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getLeaveRequestsByEmployee: async (employeeId: number) => {
@@ -569,10 +591,10 @@ export const leaveRequestsApi = {
       `${API_BASE_URL}/leave-requests/employee/${employeeId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   getLeaveRequestsByStatus: async (status: string) => {
@@ -580,10 +602,10 @@ export const leaveRequestsApi = {
       `${API_BASE_URL}/leave-requests/status/${status}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   updateLeaveRequest: async (
@@ -599,18 +621,18 @@ export const leaveRequestsApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/leave-requests/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(lrData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteLeaveRequest: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/leave-requests/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -623,34 +645,34 @@ export const benefitsApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/benefits`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(benData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllBenefits: async () => {
     const response = await fetch(`${API_BASE_URL}/benefits`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getBenefitById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/benefits/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getBenefitByName: async (name: string) => {
     const response = await fetch(`${API_BASE_URL}/benefits/name/${name}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   updateBenefit: async (
@@ -663,18 +685,18 @@ export const benefitsApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/benefits/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(benData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteBenefit: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/benefits/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -687,26 +709,26 @@ export const employeeBenefitsApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/employee-benefits`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(ebData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllEmployeeBenefits: async () => {
     const response = await fetch(`${API_BASE_URL}/employee-benefits`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getEmployeeBenefitById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/employee-benefits/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getEmployeeBenefitsByEmployee: async (employeeId: number) => {
@@ -714,10 +736,10 @@ export const employeeBenefitsApi = {
       `${API_BASE_URL}/employee-benefits/employee/${employeeId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   updateEmployeeBenefit: async (
@@ -730,18 +752,18 @@ export const employeeBenefitsApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/employee-benefits/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(ebData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deleteEmployeeBenefit: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/employee-benefits/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -758,26 +780,26 @@ export const payrollApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/payroll`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(prData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllPayroll: async () => {
     const response = await fetch(`${API_BASE_URL}/payroll`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getPayrollById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/payroll/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getPayrollByEmployee: async (employeeId: number) => {
@@ -785,10 +807,10 @@ export const payrollApi = {
       `${API_BASE_URL}/payroll/employee/${employeeId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   updatePayroll: async (
@@ -805,18 +827,18 @@ export const payrollApi = {
   ) => {
     const response = await fetch(`${API_BASE_URL}/payroll/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(prData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   deletePayroll: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/payroll/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -831,34 +853,34 @@ export const auditLogsApi = {
   }) => {
     const response = await fetch(`${API_BASE_URL}/audit-logs`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(alData),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAllAuditLogs: async () => {
     const response = await fetch(`${API_BASE_URL}/audit-logs`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAuditLogById: async (id: number) => {
     const response = await fetch(`${API_BASE_URL}/audit-logs/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAuditLogsByUser: async (userId: number) => {
     const response = await fetch(`${API_BASE_URL}/audit-logs/user/${userId}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   getAuditLogsByTable: async (tableName: string) => {
@@ -866,10 +888,10 @@ export const auditLogsApi = {
       `${API_BASE_URL}/audit-logs/table/${tableName}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 
   getAuditLogsByAction: async (action: string) => {
@@ -877,10 +899,10 @@ export const auditLogsApi = {
       `${API_BASE_URL}/audit-logs/action/${action}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
       },
     );
-    return response.json();
+    return handleResponse(response);
   },
 };
 
@@ -889,18 +911,20 @@ export const cloudinaryApi = {
   uploadImage: async (file: File) => {
     const formData = new FormData();
     formData.append("image", file);
+    const token = getAccessToken();
     const response = await fetch(`${API_BASE_URL}/cloud/upload`, {
       method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
-    return response.json();
+    return handleResponse(response);
   },
 
   verifyCloudinaryConfig: async () => {
     const response = await fetch(`${API_BASE_URL}/cloud/verify`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
-    return response.json();
+    return handleResponse(response);
   },
 };

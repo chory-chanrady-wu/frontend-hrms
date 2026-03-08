@@ -1,17 +1,13 @@
-import type { ReactNode } from "react";
+import type { DashboardLayoutProps } from "@/lib/types";
 
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-type DashboardLayoutProps = {
-  children: ReactNode;
-};
-
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
+      <div className="flex min-h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
         <Sidebar />
         <SidebarInset>
           <Header />

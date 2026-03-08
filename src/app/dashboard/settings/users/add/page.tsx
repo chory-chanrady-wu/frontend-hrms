@@ -2,22 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useCreateUser } from "@/hooks/user-query";
 
 export default function AddUserPage() {
   const router = useRouter();
+  const { mutate: createUser, isPending } = useCreateUser();
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
+    fullName: "",
     email: "",
-    role: "",
+    phoneNumber: "",
     password: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating user:", formData);
-    router.push("/dashboard/settings/users");
+    createUser(formData, {
+      onSuccess: () => router.push("/dashboard/settings/users"),
+      onError: (err) =>
+        alert("Failed to create user: " + (err as Error).message),
+    });
   };
 
   return (
@@ -25,32 +31,49 @@ export default function AddUserPage() {
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/dashboard/settings/users"
-          className="p-2 hover:bg-slate-100 rounded-lg transition"
+          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
         >
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
+          <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-400" />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Add New User</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Add New User
+        </h1>
       </div>
 
       <div className="max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Full Name *
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Username *
             </label>
             <input
               type="text"
-              value={formData.name}
+              value={formData.username}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, username: e.target.value })
               }
               required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              value={formData.fullName}
+              onChange={(e) =>
+                setFormData({ ...formData, fullName: e.target.value })
+              }
+              required
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Email *
             </label>
             <input
@@ -60,32 +83,26 @@ export default function AddUserPage() {
                 setFormData({ ...formData, email: e.target.value })
               }
               required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Role *
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Phone
             </label>
-            <select
-              value={formData.role}
+            <input
+              type="tel"
+              value={formData.phoneNumber}
               onChange={(e) =>
-                setFormData({ ...formData, role: e.target.value })
+                setFormData({ ...formData, phoneNumber: e.target.value })
               }
-              required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            >
-              <option value="">Select role</option>
-              <option value="admin">Administrator</option>
-              <option value="hr">HR Manager</option>
-              <option value="manager">Department Manager</option>
-              <option value="employee">Employee</option>
-            </select>
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Password *
             </label>
             <input
@@ -95,20 +112,22 @@ export default function AddUserPage() {
                 setFormData({ ...formData, password: e.target.value })
               }
               required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              className="bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+              disabled={isPending}
+              className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
             >
+              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Create User
             </button>
             <Link
               href="/dashboard/settings/users"
-              className="bg-white border border-slate-300 text-slate-700 px-6 py-2 rounded-lg font-medium hover:bg-slate-50 transition"
+              className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition"
             >
               Cancel
             </Link>

@@ -2,14 +2,67 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Bell, LogOut, User } from "lucide-react";
+import { Bell, LogOut, User, Sun, Moon, Monitor } from "lucide-react";
 import { logout } from "@/lib/auth";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useGetUserByUsername } from "@/hooks/user-query";
+import { useGetAllEmployees } from "@/hooks/employee-query";
+import type { EmployeeProfile } from "@/lib/types";
+import { useTheme } from "@/src/components/ThemeProvider";
 
 export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
+
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("User");
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("userId") || "";
+    const storedFullName = localStorage.getItem("fullName") || "";
+    setUsername(storedUsername);
+    if (storedFullName) setDisplayName(storedFullName);
+
+    const empId = Number(localStorage.getItem("employeeId"));
+    if (!Number.isNaN(empId) && empId > 0) {
+      setEmployeeId(empId);
+    }
+  }, []);
+
+  // Resolve username → numeric user ID
+  const { data: userResponse } = useGetUserByUsername(
+    !employeeId ? username : "",
+  );
+  const { data: allEmployeesResponse } = useGetAllEmployees();
+
+  // Find the employee record for the logged-in user
+  const employees = (() => {
+    const raw = allEmployeesResponse?.data ?? allEmployeesResponse;
+    return Array.isArray(raw) ? (raw as EmployeeProfile[]) : [];
+  })();
+
+  const currentEmployee = (() => {
+    if (employeeId) {
+      return employees.find((e) => e.id === employeeId) ?? null;
+    }
+    const userData = userResponse?.data ?? userResponse;
+    const numericUserId = userData?.id;
+    if (numericUserId) {
+      return employees.find((e) => e.userId === numericUserId) ?? null;
+    }
+    if (username) {
+      return employees.find((e) => e.username === username) ?? null;
+    }
+    return null;
+  })();
+
+  const avatarName = currentEmployee?.fullName || displayName;
+  const avatarRole =
+    currentEmployee?.positionName || currentEmployee?.departmentName || "";
+  const avatarImage = currentEmployee?.imageUrl || "";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,13 +83,13 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-800/80">
       <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 flex-1">
           <Input
             type="text"
             placeholder="Search employees, reports, approvals..."
-            className="h-11 w-96 rounded-md border-gray-200 px-4 focus-visible:ring-2 focus-visible:ring-[#0C4A6E] focus-visible:ring-offset-0"
+            className="h-11 w-96 rounded-md border-gray-200 px-4 focus-visible:ring-2 focus-visible:ring-[#0C4A6E] focus-visible:ring-offset-0 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
           />
           <div className="flex items-center gap-4">
             {/* search button */}
@@ -51,7 +104,7 @@ export default function Header() {
           size="icon"
           className="relative h-10 w-10 rounded-full mr-3"
         >
-          <Bell className="h-6 w-6 text-slate-600" />
+          <Bell className="h-6 w-6 text-slate-600 dark:text-slate-300" />
           <span className="absolute top-1 right-1 inline-flex h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
         </Button>
         {/* User Profile Section */}
@@ -59,22 +112,39 @@ export default function Header() {
           <Button
             variant="ghost"
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-4 hover:bg-slate-100 rounded-lg p-2 transition"
+            className="flex items-center gap-4 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition"
           >
-            <img
-              src="../assets/image.png"
-              alt="User Avatar"
-              className="h-10 w-10 rounded-full object-cover"
-            />
+            {avatarImage ? (
+              <img
+                src={avatarImage}
+                alt="User Avatar"
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-600">
+                {avatarName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </div>
+            )}
             <div className="flex flex-col text-left">
-              <span className="text-sm font-medium text-slate-900">Admin</span>
-              <span className="text-xs text-slate-500">Administrator</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                {avatarName}
+              </span>
+              {avatarRole && (
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {avatarRole}
+                </span>
+              )}
             </div>
           </Button>
 
           {/* Dropdown Menu */}
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50">
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -88,7 +158,46 @@ export default function Header() {
                   Profile
                 </Link>
               </Button>
-              <hr className="my-1 border-slate-200" />
+              <hr className="my-1 border-slate-200 dark:border-slate-700" />
+              {/* Theme Switcher */}
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+                  Theme
+                </p>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition ${
+                      theme === "light"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <Sun className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition ${
+                      theme === "dark"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <Moon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setTheme("system")}
+                    className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition ${
+                      theme === "system"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <Monitor className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+              <hr className="my-1 border-slate-200 dark:border-slate-700" />
               <Button
                 variant="ghost"
                 onClick={handleLogout}
