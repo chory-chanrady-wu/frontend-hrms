@@ -16,6 +16,8 @@ export type EmployeeProfile = {
   username: string;
   fullName: string;
   email: string;
+  phoneNumber: string | null;
+  userStatus: string;
   departmentId: number;
   departmentName: string;
   positionId: number;
@@ -23,7 +25,10 @@ export type EmployeeProfile = {
   employmentType: string;
   salary: number;
   hireDate: string;
-  status: string;
+  dateOfBirth: string | null;
+  nationality: string | null;
+  address: string | null;
+  status: boolean;
   imageUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -64,6 +69,7 @@ export type UserInfo = {
   passwordHash: string;
   roleId: number;
   roleName: string;
+  imageUrl: string | null;
   status: boolean;
   createdAt: string;
   updatedAt: string;

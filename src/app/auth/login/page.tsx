@@ -240,7 +240,7 @@ export default function LoginPage() {
                     loginType === "email" ? formData.email : formData.username
                   }
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border ${
+                  className={`block w-full pl-10 pr-3 py-3 border text-black ${
                     errors.identifier
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
@@ -286,7 +286,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-12 py-3 border ${
+                  className={`block w-full pl-10 pr-12 py-3 border text-black ${
                     errors.password
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"

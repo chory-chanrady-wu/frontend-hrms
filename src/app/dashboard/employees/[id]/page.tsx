@@ -5,14 +5,19 @@ import { useGetEmployeeById, useDeleteEmployee } from "@/hooks/employee-query";
 import {
   ArrowLeft,
   Mail,
+  Phone,
   Briefcase,
   Building2,
   Calendar,
-  DollarSign,
   Loader2,
   Pencil,
   Trash2,
   User,
+  Shield,
+  AtSign,
+  MapPin,
+  Globe,
+  Cake,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -57,11 +62,9 @@ export default function EmployeeDetailPage() {
   const emp: any = employee?.data ?? employee;
 
   const statusColor =
-    emp.status === "active"
+    emp.status === true
       ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-      : emp.status === "on_leave"
-        ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
 
   return (
     <div>
@@ -118,13 +121,63 @@ export default function EmployeeDetailPage() {
             {emp.fullName || emp.username || "N/A"}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            {emp.jobTitle || emp.positionName || "—"}
+            @{emp.username}
           </p>
-          <span
-            className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColor}`}
-          >
-            {emp.status?.replace("_", " ") || "N/A"}
-          </span>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            {emp.positionName || "—"}
+          </p>
+          <div className="flex justify-center gap-2 mt-3">
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusColor}`}
+            >
+              {emp.status === true ? "Active" : "Inactive"}
+            </span>
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                emp.userStatus === "true"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
+              User: {emp.userStatus === "true" ? "Active" : "Inactive"}
+            </span>
+          </div>
+
+          {/* Personal Info */}
+          <div className="mt-6 space-y-3 text-left border-t border-slate-200 dark:border-slate-700 pt-4">
+            <div className="flex items-center gap-3 text-sm">
+              <Mail className="h-4 w-4 text-slate-400" />
+              <span className="text-slate-700 dark:text-slate-300">
+                {emp.email || "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <Phone className="h-4 w-4 text-slate-400" />
+              <span className="text-slate-700 dark:text-slate-300">
+                {emp.phoneNumber || "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <Cake className="h-4 w-4 text-slate-400" />
+              <span className="text-slate-700 dark:text-slate-300">
+                {emp.dateOfBirth
+                  ? new Date(emp.dateOfBirth).toLocaleDateString()
+                  : "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <Globe className="h-4 w-4 text-slate-400" />
+              <span className="text-slate-700 dark:text-slate-300">
+                {emp.nationality || "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <MapPin className="h-4 w-4 text-slate-400" />
+              <span className="text-slate-700 dark:text-slate-300">
+                {emp.address || "—"}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Details */}
@@ -140,9 +193,9 @@ export default function EmployeeDetailPage() {
                 value={emp.email || "—"}
               />
               <InfoRow
-                icon={<Briefcase className="h-4 w-4" />}
-                label="Employment Type"
-                value={emp.employmentType || "—"}
+                icon={<Phone className="h-4 w-4" />}
+                label="Phone Number"
+                value={emp.phoneNumber || "—"}
               />
               <InfoRow
                 icon={<Building2 className="h-4 w-4" />}
@@ -155,13 +208,9 @@ export default function EmployeeDetailPage() {
                 value={emp.positionName || "—"}
               />
               <InfoRow
-                icon={<DollarSign className="h-4 w-4" />}
-                label="Salary"
-                value={
-                  emp.salary != null
-                    ? `$${Number(emp.salary).toLocaleString()}`
-                    : "—"
-                }
+                icon={<Briefcase className="h-4 w-4" />}
+                label="Employment Type"
+                value={emp.employmentType || "—"}
               />
               <InfoRow
                 icon={<Calendar className="h-4 w-4" />}
@@ -183,12 +232,22 @@ export default function EmployeeDetailPage() {
               <InfoRow
                 icon={<User className="h-4 w-4" />}
                 label="Employee ID"
-                value={String(emp.id)}
+                value={`EMP-${emp.id}`}
               />
               <InfoRow
                 icon={<User className="h-4 w-4" />}
                 label="User ID"
                 value={String(emp.userId)}
+              />
+              <InfoRow
+                icon={<AtSign className="h-4 w-4" />}
+                label="Username"
+                value={emp.username || "—"}
+              />
+              <InfoRow
+                icon={<Shield className="h-4 w-4" />}
+                label="User Status"
+                value={emp.userStatus === "true" ? "Active" : "Inactive"}
               />
               <InfoRow
                 icon={<Calendar className="h-4 w-4" />}

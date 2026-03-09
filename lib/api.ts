@@ -321,19 +321,12 @@ export const positionsApi = {
 
 // ==================== EMPLOYEES ====================
 export const employeesApi = {
-  createEmployee: async (empData: {
-    userId: number;
-    departmentId: number;
-    jobTitle: string;
-    employmentType: string;
-    salary: number;
-    hireDate: string;
-    status: string;
-  }) => {
+  createEmployee: async (formData: FormData) => {
+    const token = getAccessToken();
     const response = await fetch(`${API_BASE_URL}/employees`, {
       method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(empData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
     });
     return handleResponse(response);
   },
@@ -376,13 +369,18 @@ export const employeesApi = {
   updateEmployee: async (
     id: number,
     empData: {
-      userId: number;
+      fullName: string;
+      email: string;
+      phoneNumber?: string;
       departmentId: number;
-      jobTitle: string;
+      positionId: number;
       employmentType: string;
       salary: number;
       hireDate: string;
-      status: string;
+      status: boolean;
+      dateOfBirth?: string;
+      nationality?: string;
+      address?: string;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
@@ -421,10 +419,9 @@ export const employeesApi = {
 export const attendanceApi = {
   createAttendance: async (attData: {
     employeeId: number;
-    date: string;
+    checkIn: string;
+    checkOut: string;
     status: string;
-    checkInTime: string;
-    checkOutTime: string;
   }) => {
     const response = await fetch(`${API_BASE_URL}/attendance`, {
       method: "POST",
@@ -465,10 +462,9 @@ export const attendanceApi = {
     id: number,
     attData: {
       employeeId: number;
-      date: string;
+      checkIn: string;
+      checkOut: string;
       status: string;
-      checkInTime: string;
-      checkOutTime: string;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/attendance/${id}`, {

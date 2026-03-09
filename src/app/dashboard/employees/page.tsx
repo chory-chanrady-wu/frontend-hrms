@@ -2,15 +2,20 @@
 
 import { Mail, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useGetAllEmployees, useDeleteEmployee } from "@/hooks/employee-query";
 import { useState } from "react";
 import type { EmployeeProfile } from "@/lib/types";
 
+const PAGE_SIZE = 6;
+
 export default function EmployeesPage() {
   const { data: employeesResponse, isLoading, error } = useGetAllEmployees();
   const { mutate: deleteEmployee } = useDeleteEmployee();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const employeeList: EmployeeProfile[] = Array.isArray(employeesResponse)
     ? employeesResponse
@@ -38,15 +43,17 @@ export default function EmployeesPage() {
     return matchesSearch && matchesDept;
   });
 
+  // Pagination
+  const totalPages = Math.ceil(filteredEmployees.length / PAGE_SIZE);
+  const paginatedEmployees = filteredEmployees.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   // Summary counts
   const totalCount = employeeList.length;
-  const activeCount = employeeList.filter((e) => e.status === "active").length;
-  const onLeaveCount = employeeList.filter(
-    (e) => e.status === "on_leave",
-  ).length;
-  const inactiveCount = employeeList.filter(
-    (e) => e.status === "inactive",
-  ).length;
+  const activeCount = employeeList.filter((e) => e.status === true).length;
+  const inactiveCount = employeeList.filter((e) => e.status === false).length;
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this employee?")) {
@@ -77,7 +84,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-4 mb-6">
+      <div className="grid gap-6 md:grid-cols-3 mb-6">
         <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
           <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
             Total Employees
@@ -92,14 +99,6 @@ export default function EmployeesPage() {
           </p>
           <p className="text-3xl font-bold text-green-900 dark:text-green-200 mt-2">
             {activeCount}
-          </p>
-        </div>
-        <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
-          <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
-            On Leave
-          </p>
-          <p className="text-3xl font-bold text-orange-900 dark:text-orange-200 mt-2">
-            {onLeaveCount}
           </p>
         </div>
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
@@ -118,12 +117,18 @@ export default function EmployeesPage() {
           type="text"
           placeholder="Search employees..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
           className="max-w-md flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
         />
         <select
           value={departmentFilter}
-          onChange={(e) => setDepartmentFilter(e.target.value)}
+          onChange={(e) => {
+            setDepartmentFilter(e.target.value);
+            setCurrentPage(1);
+          }}
           className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
         >
           {departments.map((dept) => (
@@ -170,11 +175,14 @@ export default function EmployeesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {filteredEmployees.length > 0 ? (
-                filteredEmployees.map((employee) => (
+              {paginatedEmployees.length > 0 ? (
+                paginatedEmployees.map((employee) => (
                   <tr
                     key={employee.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                    onClick={() =>
+                      router.push(`/dashboard/employees/${employee.id}`)
+                    }
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
@@ -223,18 +231,19 @@ export default function EmployeesPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          employee.status === "active"
+                          employee.status === true
                             ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
-                            : employee.status === "on_leave"
-                              ? "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300"
-                              : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+                            : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
                         }`}
                       >
-                        {employee.status}
+                        {employee.status === true ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
+                      <div
+                        className="flex justify-end gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Link
                           href={`/dashboard/employees/${employee.id}/edit`}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
@@ -263,6 +272,50 @@ export default function EmployeesPage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+                {Math.min(currentPage * PAGE_SIZE, filteredEmployees.length)} of{" "}
+                {filteredEmployees.length} employees
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 text-sm rounded-md ${
+                        page === currentPage
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -49,15 +49,7 @@ export const useGetEmployeesByStatus = (status: string) => {
 export const useCreateEmployee = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (empData: {
-      userId: number;
-      departmentId: number;
-      jobTitle: string;
-      employmentType: string;
-      salary: number;
-      hireDate: string;
-      status: string;
-    }) => employeesApi.createEmployee(empData),
+    mutationFn: (formData: FormData) => employeesApi.createEmployee(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMP_KEYS.lists() });
     },
@@ -73,13 +65,18 @@ export const useUpdateEmployee = () => {
     }: {
       id: number;
       empData: {
-        userId: number;
+        fullName: string;
+        email: string;
+        phoneNumber?: string;
         departmentId: number;
-        jobTitle: string;
+        positionId: number;
         employmentType: string;
         salary: number;
         hireDate: string;
-        status: string;
+        status: boolean;
+        dateOfBirth?: string;
+        nationality?: string;
+        address?: string;
       };
     }) => employeesApi.updateEmployee(id, empData),
     onSuccess: (_data: any, { id }: any) => {

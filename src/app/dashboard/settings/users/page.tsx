@@ -1,21 +1,40 @@
 "use client";
 
-import { User, Mail, Shield, Edit, Trash2, Loader2 } from "lucide-react";
+import { useState } from "react";
+import {
+  User,
+  Mail,
+  Shield,
+  Edit,
+  Trash2,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGetAllUsers, useDeleteUser } from "@/hooks/user-query";
 import { UserInfo } from "@/lib/types";
 
+const PAGE_SIZE = 8;
+
 export default function UsersPage() {
   const router = useRouter();
   const { data: usersResponse, isLoading, isError } = useGetAllUsers();
   const deleteUser = useDeleteUser();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const users: UserInfo[] = Array.isArray(usersResponse)
     ? usersResponse
     : Array.isArray(usersResponse?.data)
       ? usersResponse.data
       : [];
+
+  const totalPages = Math.ceil(users.length / PAGE_SIZE);
+  const paginatedUsers = users.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this user?")) {
@@ -83,7 +102,7 @@ export default function UsersPage() {
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              paginatedUsers.map((user) => (
                 <tr
                   key={user.id}
                   onClick={() =>
@@ -93,14 +112,22 @@ export default function UsersPage() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-600">
-                        {user.fullName
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </div>
+                      {user.imageUrl ? (
+                        <img
+                          src={user.imageUrl}
+                          alt={user.fullName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-600">
+                          {user.fullName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </div>
+                      )}
                       <div>
                         <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                           {user.fullName}
@@ -165,6 +192,46 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+            {Math.min(currentPage * PAGE_SIZE, users.length)} of {users.length}{" "}
+            users
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 text-sm rounded-md ${
+                  page === currentPage
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

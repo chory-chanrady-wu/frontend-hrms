@@ -41,10 +41,9 @@ export const useCreateAttendance = () => {
   return useMutation({
     mutationFn: (attData: {
       employeeId: number;
-      date: string;
+      checkIn: string;
+      checkOut: string;
       status: string;
-      checkInTime: string;
-      checkOutTime: string;
     }) => attendanceApi.createAttendance(attData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ATT_KEYS.lists() });
@@ -62,10 +61,9 @@ export const useUpdateAttendance = () => {
       id: number;
       attData: {
         employeeId: number;
-        date: string;
+        checkIn: string;
+        checkOut: string;
         status: string;
-        checkInTime: string;
-        checkOutTime: string;
       };
     }) => attendanceApi.updateAttendance(id, attData),
     onSuccess: (_data: any, { id }: any) => {

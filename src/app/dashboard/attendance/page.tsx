@@ -19,6 +19,21 @@ import {
 } from "@/hooks/attendance-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 
+const PAGE_SIZE = 7;
+
+const formatDate = (datetime: string) => {
+  if (!datetime) return "—";
+  return new Date(datetime).toLocaleDateString();
+};
+
+const formatTime = (datetime: string) => {
+  if (!datetime) return "—";
+  return new Date(datetime).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export default function AttendancePage() {
   const { data: attendance, isLoading, error } = useGetAllAttendance();
   const { mutate: createAttendance, isPending: isCreating } =
@@ -56,21 +71,41 @@ export default function AttendancePage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     employeeId: "",
     date: new Date().toISOString().split("T")[0],
     status: "present",
-    checkInTime: "",
-    checkOutTime: "",
+    checkIn: "",
+    checkOut: "",
   });
+
+  // Filter attendance
+  const filteredAttendance = attendanceList.filter((record: any) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      record.employeeName?.toLowerCase().includes(q) ||
+      record.status?.toLowerCase().includes(q) ||
+      String(record.employeeId).includes(q)
+    );
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAttendance.length / PAGE_SIZE);
+  const paginatedAttendance = filteredAttendance.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   const resetForm = () => {
     setFormData({
       employeeId: "",
       date: new Date().toISOString().split("T")[0],
       status: "present",
-      checkInTime: "",
-      checkOutTime: "",
+      checkIn: "",
+      checkOut: "",
     });
     setEditingRecord(null);
   };
@@ -82,24 +117,34 @@ export default function AttendancePage() {
 
   const openEdit = (record: any) => {
     setEditingRecord(record);
+    const checkInDate = record.checkIn ? new Date(record.checkIn) : null;
+    const checkOutDate = record.checkOut ? new Date(record.checkOut) : null;
     setFormData({
       employeeId: String(record.employeeId),
-      date: record.date?.split("T")[0] || record.date || "",
+      date: checkInDate
+        ? checkInDate.toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
       status: record.status || "present",
-      checkInTime: record.checkInTime || "",
-      checkOutTime: record.checkOutTime || "",
+      checkIn: checkInDate ? checkInDate.toTimeString().slice(0, 5) : "",
+      checkOut: checkOutDate ? checkOutDate.toTimeString().slice(0, 5) : "",
     });
     setShowModal(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const checkIn = formData.checkIn
+      ? `${formData.date}T${formData.checkIn}:00`
+      : `${formData.date}T00:00:00`;
+    const checkOut = formData.checkOut
+      ? `${formData.date}T${formData.checkOut}:00`
+      : `${formData.date}T00:00:00`;
+
     const payload = {
       employeeId: Number(formData.employeeId),
-      date: formData.date,
+      checkIn,
+      checkOut,
       status: formData.status,
-      checkInTime: formData.checkInTime,
-      checkOutTime: formData.checkOutTime,
     };
 
     if (editingRecord) {
@@ -137,7 +182,7 @@ export default function AttendancePage() {
         <div className="flex gap-3">
           <button
             onClick={openCreate}
-            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+            className="bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
           >
             Mark Attendance
           </button>
@@ -203,12 +248,24 @@ export default function AttendancePage() {
         </div>
       </div>
 
+      {/* Search */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search attendance..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="max-w-md w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+        />
+      </div>
+
       {/* Attendance Table */}
       {isLoading && (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 text-center">
-          <p className="text-slate-600 dark:text-slate-400">
-            Loading attendance...
-          </p>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
         </div>
       )}
 
@@ -225,51 +282,52 @@ export default function AttendancePage() {
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Employee ID
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                  Employee
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Check In
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Check Out
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {attendanceList.length > 0 ? (
-                attendanceList.map((record: any) => (
+              {paginatedAttendance.length > 0 ? (
+                paginatedAttendance.map((record: any) => (
                   <tr
                     key={record.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {record.employeeId}
+                        {record.employeeName ||
+                          `Employee #${record.employeeId}`}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
-                        {record.date}
+                        {formatDate(record.checkIn)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
-                        {record.checkInTime}
+                        {formatTime(record.checkIn)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
-                        {record.checkOutTime}
+                        {formatTime(record.checkOut)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -309,7 +367,7 @@ export default function AttendancePage() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-6 py-4 text-center text-slate-500 dark:text-slate-400"
+                    className="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
                     No attendance records found
                   </td>
@@ -317,6 +375,52 @@ export default function AttendancePage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {filteredAttendance.length > 0 && (
+            <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+                {Math.min(currentPage * PAGE_SIZE, filteredAttendance.length)}{" "}
+                of {filteredAttendance.length} records
+              </p>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 text-sm rounded-md ${
+                          page === currentPage
+                            ? "bg-blue-600 text-white"
+                            : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -398,9 +502,9 @@ export default function AttendancePage() {
                   </label>
                   <input
                     type="time"
-                    value={formData.checkInTime}
+                    value={formData.checkIn}
                     onChange={(e) =>
-                      setFormData({ ...formData, checkInTime: e.target.value })
+                      setFormData({ ...formData, checkIn: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
@@ -411,9 +515,9 @@ export default function AttendancePage() {
                   </label>
                   <input
                     type="time"
-                    value={formData.checkOutTime}
+                    value={formData.checkOut}
                     onChange={(e) =>
-                      setFormData({ ...formData, checkOutTime: e.target.value })
+                      setFormData({ ...formData, checkOut: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
                   />
@@ -423,7 +527,7 @@ export default function AttendancePage() {
                 <button
                   type="submit"
                   disabled={isCreating || isUpdating}
-                  className="flex-1 bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {(isCreating || isUpdating) && (
                     <Loader2 className="h-4 w-4 animate-spin" />
