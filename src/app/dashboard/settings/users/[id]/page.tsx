@@ -11,6 +11,7 @@ import {
   Pencil,
   Trash2,
   Loader2,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -136,6 +137,34 @@ export default function UserDetailPage() {
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {user.id}
                 </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Shield className="h-4 w-4 text-slate-400 mt-0.5" />
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Role
+                </p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {user.roleName || "—"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <User className="h-4 w-4 text-slate-400 mt-0.5" />
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Status
+                </p>
+                <span
+                  className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
+                    user.status === true
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                      : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+                  }`}
+                >
+                  {user.status === true ? "Active" : "Inactive"}
+                </span>
               </div>
             </div>
             <div className="flex items-start gap-3">

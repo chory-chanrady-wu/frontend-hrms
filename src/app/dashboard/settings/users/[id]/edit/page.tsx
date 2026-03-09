@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useGetUserById, useUpdateUser } from "@/hooks/user-query";
+import { useGetAllRoles } from "@/hooks/role-query";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -12,6 +13,13 @@ export default function EditUserPage() {
   const userId = Number(params.id);
   const { data: userResponse, isLoading } = useGetUserById(userId);
   const { mutate: updateUser, isPending } = useUpdateUser();
+  const { data: rolesResponse } = useGetAllRoles();
+
+  const roles = Array.isArray(rolesResponse)
+    ? rolesResponse
+    : Array.isArray(rolesResponse?.data)
+      ? rolesResponse.data
+      : [];
 
   const user: any = userResponse?.data ?? userResponse;
 
@@ -20,6 +28,7 @@ export default function EditUserPage() {
     fullName: "",
     email: "",
     phoneNumber: "",
+    roleId: "",
   });
 
   useEffect(() => {
@@ -29,6 +38,7 @@ export default function EditUserPage() {
         fullName: user.fullName || "",
         email: user.email || "",
         phoneNumber: user.phoneNumber || "",
+        roleId: user.roleId ? String(user.roleId) : "",
       });
     }
   }, [user]);
@@ -36,7 +46,16 @@ export default function EditUserPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateUser(
-      { id: userId, userData: formData },
+      {
+        id: userId,
+        userData: {
+          username: formData.username,
+          fullName: formData.fullName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          ...(formData.roleId ? { roleId: Number(formData.roleId) } : {}),
+        },
+      },
       {
         onSuccess: () => router.push(`/dashboard/settings/users/${userId}`),
         onError: (err) => alert("Failed to update: " + (err as Error).message),
@@ -125,6 +144,26 @@ export default function EditUserPage() {
               }
               className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Role
+            </label>
+            <select
+              value={formData.roleId}
+              onChange={(e) =>
+                setFormData({ ...formData, roleId: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            >
+              <option value="">Select Role</option>
+              {roles.map((role: any) => (
+                <option key={role.id} value={role.id}>
+                  {role.roleName}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex gap-3 pt-4">

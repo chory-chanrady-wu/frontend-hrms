@@ -15,6 +15,8 @@ export default function DepartmentsPage() {
   const { mutate: deleteDepartment } = useDeleteDepartment();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 6;
 
   const empList = Array.isArray(empResponse)
     ? empResponse
@@ -42,6 +44,13 @@ export default function DepartmentsPage() {
     (dept: any) =>
       dept.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       dept.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(filteredDepts.length / PAGE_SIZE);
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedDepts = filteredDepts.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
   );
 
   const handleDelete = (id: number) => {
@@ -89,15 +98,22 @@ export default function DepartmentsPage() {
             Active
           </p>
           <p className="text-3xl font-bold text-green-900 dark:text-green-100 mt-2">
-            {deptList.length}
+            {
+              deptList.filter((d: any) => (employeeCountByDept[d.id] || 0) > 0)
+                .length
+            }
           </p>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 dark:bg-purple-900/20 dark:border-purple-800">
-          <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-            Showing
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 dark:bg-red-900/20 dark:border-red-800">
+          <p className="text-sm font-medium text-red-600 dark:text-red-400">
+            Inactive
           </p>
-          <p className="text-3xl font-bold text-purple-900 dark:text-purple-100 mt-2">
-            {filteredDepts.length}
+          <p className="text-3xl font-bold text-red-900 dark:text-red-100 mt-2">
+            {
+              deptList.filter(
+                (d: any) => (employeeCountByDept[d.id] || 0) === 0,
+              ).length
+            }
           </p>
         </div>
       </div>
@@ -110,7 +126,10 @@ export default function DepartmentsPage() {
             type="text"
             placeholder="Search departments..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100"
           />
         </div>
@@ -150,6 +169,9 @@ export default function DepartmentsPage() {
                     Description
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Head of Department
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Employees
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -161,14 +183,14 @@ export default function DepartmentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {filteredDepts.length > 0 ? (
-                  filteredDepts.map((dept: any, index: number) => (
+                {paginatedDepts.length > 0 ? (
+                  paginatedDepts.map((dept: any, index: number) => (
                     <tr
                       key={dept.id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition"
                     >
                       <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                        {index + 1}
+                        {startIndex + index + 1}
                       </td>
                       <td className="px-6 py-4">
                         <Link
@@ -186,6 +208,13 @@ export default function DepartmentsPage() {
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">
                         {dept.description || "No description"}
                       </td>
+                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                        {dept.headOfDepartmentName || (
+                          <span className="text-slate-400 dark:text-slate-500 italic">
+                            Not assigned
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-slate-100">
                           <Users className="h-4 w-4 text-slate-400" />
@@ -193,8 +222,16 @@ export default function DepartmentsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          Active
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            (employeeCountByDept[dept.id] || 0) > 0
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          }`}
+                        >
+                          {(employeeCountByDept[dept.id] || 0) > 0
+                            ? "Active"
+                            : "Inactive"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -227,7 +264,7 @@ export default function DepartmentsPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
                     >
                       No departments found
@@ -237,6 +274,52 @@ export default function DepartmentsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filteredDepts.length > 0 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Showing {startIndex + 1}-
+                {Math.min(startIndex + PAGE_SIZE, filteredDepts.length)} of{" "}
+                {filteredDepts.length} departments
+              </p>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-slate-300"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 text-sm border rounded-lg transition ${
+                          currentPage === page
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-slate-300"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

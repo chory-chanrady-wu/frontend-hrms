@@ -113,6 +113,7 @@ export const usersApi = {
       email: string;
       fullName: string;
       phoneNumber: string;
+      roleId?: number;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
@@ -193,7 +194,11 @@ export const rolesApi = {
 
 // ==================== DEPARTMENTS ====================
 export const departmentsApi = {
-  createDepartment: async (deptData: { name: string; description: string }) => {
+  createDepartment: async (deptData: {
+    name: string;
+    description: string;
+    headOfDepartmentId?: number | null;
+  }) => {
     const response = await fetch(`${API_BASE_URL}/departments`, {
       method: "POST",
       headers: getAuthHeaders(),
@@ -231,6 +236,7 @@ export const departmentsApi = {
     deptData: {
       name: string;
       description: string;
+      headOfDepartmentId?: number | null;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
@@ -381,6 +387,7 @@ export const employeesApi = {
       dateOfBirth?: string;
       nationality?: string;
       address?: string;
+      imageUrl?: string;
     },
   ) => {
     const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
@@ -898,6 +905,67 @@ export const auditLogsApi = {
         headers: getAuthHeaders(),
       },
     );
+    return handleResponse(response);
+  },
+};
+
+// ==================== ANNOUNCEMENTS ====================
+export const announcementsApi = {
+  createAnnouncement: async (data: {
+    title: string;
+    content: string;
+    priority: string;
+    publishedAt?: string;
+    expiresAt?: string;
+    createdById?: number;
+  }) => {
+    const response = await fetch(`${API_BASE_URL}/announcements`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  getAllAnnouncements: async () => {
+    const response = await fetch(`${API_BASE_URL}/announcements`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  getAnnouncementById: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/announcements/${id}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  updateAnnouncement: async (
+    id: number,
+    data: {
+      title: string;
+      content: string;
+      priority: string;
+      publishedAt?: string;
+      expiresAt?: string;
+    },
+  ) => {
+    const response = await fetch(`${API_BASE_URL}/announcements/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  deleteAnnouncement: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/announcements/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
     return handleResponse(response);
   },
 };

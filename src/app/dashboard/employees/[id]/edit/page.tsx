@@ -90,6 +90,7 @@ export default function EditEmployeePage() {
     if (formData.dateOfBirth) empData.dateOfBirth = formData.dateOfBirth;
     if (formData.nationality) empData.nationality = formData.nationality;
     if (formData.address) empData.address = formData.address;
+    if (emp?.imageUrl) empData.imageUrl = emp.imageUrl;
 
     updateEmployee(
       { id: employeeId, empData },

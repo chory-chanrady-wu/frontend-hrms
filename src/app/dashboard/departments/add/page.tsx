@@ -5,19 +5,35 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCreateDepartment } from "@/hooks/department-query";
+import { useGetAllUsers } from "@/hooks/user-query";
 
 export default function AddDepartmentPage() {
   const router = useRouter();
   const { mutate: createDepartment, isPending } = useCreateDepartment();
+  const { data: userResponse } = useGetAllUsers();
+
+  const userList = Array.isArray(userResponse)
+    ? userResponse
+    : Array.isArray(userResponse?.data)
+      ? userResponse.data
+      : [];
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    headOfDepartmentId: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createDepartment(
-      { name: formData.name, description: formData.description },
+      {
+        name: formData.name,
+        description: formData.description,
+        headOfDepartmentId: formData.headOfDepartmentId
+          ? Number(formData.headOfDepartmentId)
+          : null,
+      },
       {
         onSuccess: () => {
           router.push("/dashboard/departments");
@@ -27,7 +43,9 @@ export default function AddDepartmentPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     setFormData({
       ...formData,
@@ -88,6 +106,29 @@ export default function AddDepartmentPage() {
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
                   placeholder="Brief description of the department"
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="headOfDepartmentId"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                >
+                  Head of Department
+                </label>
+                <select
+                  id="headOfDepartmentId"
+                  name="headOfDepartmentId"
+                  value={formData.headOfDepartmentId}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+                >
+                  <option value="">Select Head of Department (optional)</option>
+                  {userList.map((user: any) => (
+                    <option key={user.id} value={user.id}>
+                      {user.fullName || user.username} — {user.email}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

@@ -39,8 +39,11 @@ export const useGetDepartmentByName = (name: string) => {
 export const useCreateDepartment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (deptData: { name: string; description: string }) =>
-      departmentsApi.createDepartment(deptData),
+    mutationFn: (deptData: {
+      name: string;
+      description: string;
+      headOfDepartmentId?: number | null;
+    }) => departmentsApi.createDepartment(deptData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DEPT_KEYS.lists() });
     },
@@ -55,7 +58,11 @@ export const useUpdateDepartment = () => {
       deptData,
     }: {
       id: number;
-      deptData: { name: string; description: string };
+      deptData: {
+        name: string;
+        description: string;
+        headOfDepartmentId?: number | null;
+      };
     }) => departmentsApi.updateDepartment(id, deptData),
     onSuccess: (_data: any, { id }: any) => {
       queryClient.invalidateQueries({ queryKey: DEPT_KEYS.detail(id) });

@@ -105,6 +105,7 @@ export const useUpdateUser = () => {
         email: string;
         fullName: string;
         phoneNumber: string;
+        roleId?: number;
       };
     }) => usersApi.updateUser(id, userData),
     onSuccess: (data, { id }) => {

@@ -114,13 +114,12 @@ export default function LoginPage() {
         }
 
         // Store user identity for profile & other pages
-        if (data.userId) localStorage.setItem("userId", String(data.userId));
-        if (data.employeeId)
-          localStorage.setItem("employeeId", String(data.employeeId));
-        if (data.id) localStorage.setItem("userId", String(data.id));
-        if (data.username) localStorage.setItem("username", data.username);
-        if (data.fullName) localStorage.setItem("fullName", data.fullName);
-        if (data.email) localStorage.setItem("email", data.email);
+        if (data.user?.id) localStorage.setItem("userId", String(data.user.id));
+        if (data.user?.employeeId)
+          localStorage.setItem("employeeId", String(data.user.employeeId));
+        if (data.user?.username) localStorage.setItem("username", data.user.username);
+        if (data.user?.fullName) localStorage.setItem("fullName", data.user.fullName);
+        if (data.user?.email) localStorage.setItem("email", data.user.email);
 
         // Fallback: decode JWT to extract userId if not in response body
         const token = data.accessToken || data.token;
