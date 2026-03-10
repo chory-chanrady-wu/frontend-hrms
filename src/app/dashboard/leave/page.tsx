@@ -1,23 +1,49 @@
 "use client";
 
-import { useState } from "react";
 import { Calendar, Clock, FileText, Trash2 } from "lucide-react";
 import Link from "next/link";
 import {
   useGetAllLeaveRequests,
   useDeleteLeaveRequest,
 } from "@/hooks/leave-query";
+import { useEffect, useState } from "react";
+import { getAccessToken } from "@/lib/auth";
 
 export default function LeavePage() {
+  // Pagination
+  const PAGE_SIZE = 7;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Helper to calculate days between two dates (inclusive)
+  const calcDays = (start: string, end: string) => {
+    if (!start || !end) return 0;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diff = endDate.getTime() - startDate.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+  };
   const { data: leaveResponse, isLoading, error } = useGetAllLeaveRequests();
   const { mutate: deleteLeaveRequest } = useDeleteLeaveRequest();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
-  const leaveRequests = Array.isArray(leaveResponse)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("employeeId") || "";
+      setCurrentUserId(userId);
+    }
+  }, []);
+
+  const leaveRequestsRaw = Array.isArray(leaveResponse)
     ? leaveResponse
     : Array.isArray(leaveResponse?.data)
       ? leaveResponse.data
       : [];
+
+  // Filter leave requests for current user
+  const leaveRequests = leaveRequestsRaw.filter(
+    (l: any) => String(l.employeeId) === currentUserId,
+  );
 
   const totalRequests = leaveRequests.length;
   const approvedCount = leaveRequests.filter(
@@ -36,6 +62,13 @@ export default function LeavePage() {
       : leaveRequests.filter(
           (l: any) => l.status?.toLowerCase() === statusFilter,
         );
+
+  // Paginate filtered requests
+  const totalPages = Math.ceil(filteredRequests.length / PAGE_SIZE);
+  const paginatedRequests = filteredRequests.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   return (
     <div>
@@ -135,6 +168,9 @@ export default function LeavePage() {
                   Duration
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Days
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Reason
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -146,8 +182,8 @@ export default function LeavePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {filteredRequests.length > 0 ? (
-                filteredRequests.map((request: any) => (
+              {paginatedRequests.length > 0 ? (
+                paginatedRequests.map((request: any) => (
                   <tr
                     key={request.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
@@ -160,6 +196,11 @@ export default function LeavePage() {
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-900 dark:text-slate-100">
                         {request.startDate} — {request.endDate}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-blue-900 dark:text-blue-200">
+                        {calcDays(request.startDate, request.endDate)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -203,7 +244,7 @@ export default function LeavePage() {
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
                   >
                     No leave requests found
@@ -211,6 +252,63 @@ export default function LeavePage() {
                 </tr>
               )}
             </tbody>
+            {/* Pagination Controls */}
+            {filteredRequests.length > 0 && (
+              <tfoot>
+                <tr>
+                  <td colSpan={6} className="px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+                        {Math.min(
+                          currentPage * PAGE_SIZE,
+                          filteredRequests.length,
+                        )}{" "}
+                        of {filteredRequests.length} requests
+                      </p>
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Previous
+                          </button>
+                          {Array.from(
+                            { length: totalPages },
+                            (_, i) => i + 1,
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`px-3 py-1 text-sm rounded-md ${
+                                page === currentPage
+                                  ? "bg-blue-600 text-white"
+                                  : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) => Math.min(totalPages, p + 1))
+                            }
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       )}

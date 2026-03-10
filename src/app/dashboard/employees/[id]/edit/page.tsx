@@ -9,6 +9,7 @@ import {
   useUpdateEmployee,
   useUploadEmployeeImage,
 } from "@/hooks/employee-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetAllDepartments } from "@/hooks/department-query";
 import { useGetAllPositions } from "@/hooks/position-query";
 
@@ -21,6 +22,7 @@ export default function EditEmployeePage() {
   const { mutate: uploadImage } = useUploadEmployeeImage();
   const { data: deptResponse } = useGetAllDepartments();
   const { data: positionsResponse } = useGetAllPositions();
+  const queryClient = useQueryClient();
 
   const departments = Array.isArray(deptResponse)
     ? deptResponse
@@ -96,6 +98,9 @@ export default function EditEmployeePage() {
       { id: employeeId, empData },
       {
         onSuccess: () => {
+          // Invalidate employee detail and list queries
+          queryClient.invalidateQueries({ queryKey: ["employee", employeeId] });
+          queryClient.invalidateQueries({ queryKey: ["employees"] });
           if (imageFile) {
             uploadImage({ id: employeeId, file: imageFile });
           }

@@ -28,12 +28,18 @@ export default function ApplyLeavePage() {
       ? employeesResponse.data
       : [];
 
-  const [formData, setFormData] = useState({
-    employeeId: "",
-    leaveTypeId: "",
-    startDate: "",
-    endDate: "",
-    reason: "",
+  const [formData, setFormData] = useState(() => {
+    let defaultEmployeeId = "";
+    if (typeof window !== "undefined") {
+      defaultEmployeeId = localStorage.getItem("employeeId") || "";
+    }
+    return {
+      employeeId: defaultEmployeeId,
+      leaveTypeId: "",
+      startDate: "",
+      endDate: "",
+      reason: "",
+    };
   });
 
   const handleSubmit = (e: React.FormEvent) => {

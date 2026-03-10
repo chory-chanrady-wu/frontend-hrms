@@ -23,14 +23,36 @@ export default function GeneratePayrollPage() {
     month: "",
     year: "",
     basicSalary: "",
-    bonus: "",
+    bonusPercent: "",
     deductions: "",
   });
 
+  const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const employeeId = e.target.value;
+    const selectedEmp = employees.find(
+      (emp: any) => String(emp.id) === employeeId,
+    );
+    setFormData((prev) => ({
+      ...prev,
+      employeeId,
+      basicSalary: selectedEmp ? String(selectedEmp.salary ?? "") : "",
+    }));
+  };
+
   const basicSalary = Number(formData.basicSalary) || 0;
-  const bonus = Number(formData.bonus) || 0;
+  const bonusPercent = Number(formData.bonusPercent) || 0;
+  const bonus = basicSalary * (bonusPercent / 100);
   const deductions = Number(formData.deductions) || 0;
   const netSalary = basicSalary + bonus - deductions;
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,15 +72,6 @@ export default function GeneratePayrollPage() {
           alert("Failed to generate: " + (err as Error).message),
       },
     );
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   return (
@@ -89,7 +102,7 @@ export default function GeneratePayrollPage() {
                 id="employeeId"
                 name="employeeId"
                 value={formData.employeeId}
-                onChange={handleChange}
+                onChange={handleEmployeeChange}
                 required
                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               >
@@ -97,6 +110,7 @@ export default function GeneratePayrollPage() {
                 {employees.map((emp: any) => (
                   <option key={emp.id} value={emp.id}>
                     {emp.fullName || emp.username || `Employee #${emp.id}`}
+                    {emp.email ? ` (${emp.email})` : ""}
                   </option>
                 ))}
               </select>
@@ -157,41 +171,26 @@ export default function GeneratePayrollPage() {
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="basicSalary"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-              >
-                Basic Salary *
-              </label>
-              <input
-                type="number"
-                id="basicSalary"
-                name="basicSalary"
-                value={formData.basicSalary}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                placeholder="0.00"
-              />
-            </div>
+            {/* Basic Salary field is hidden from UI */}
 
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <label
-                  htmlFor="bonus"
+                  htmlFor="bonusPercent"
                   className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                 >
-                  Bonus
+                  Bonus (% of salary)
                 </label>
                 <input
                   type="number"
-                  id="bonus"
-                  name="bonus"
-                  value={formData.bonus}
+                  id="bonusPercent"
+                  name="bonusPercent"
+                  value={formData.bonusPercent}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="0.00"
+                  placeholder="Enter bonus %"
+                  min="0"
+                  max="100"
                 />
               </div>
 
@@ -214,45 +213,7 @@ export default function GeneratePayrollPage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                Summary
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-blue-700 dark:text-blue-300">
-                    Basic Salary:
-                  </span>
-                  <span className="font-medium text-blue-900 dark:text-blue-200">
-                    ${basicSalary.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 dark:text-blue-300">
-                    Bonus:
-                  </span>
-                  <span className="font-medium text-green-700 dark:text-green-300">
-                    +${bonus.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 dark:text-blue-300">
-                    Deductions:
-                  </span>
-                  <span className="font-medium text-red-700 dark:text-red-300">
-                    -${deductions.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-blue-200 dark:border-blue-700 pt-2">
-                  <span className="font-semibold text-blue-900 dark:text-blue-200">
-                    Net Salary:
-                  </span>
-                  <span className="font-bold text-blue-900 dark:text-blue-200">
-                    ${netSalary.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Summary section removed */}
 
             <div className="flex gap-3 pt-4">
               <button

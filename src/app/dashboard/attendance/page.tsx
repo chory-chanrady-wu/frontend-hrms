@@ -49,11 +49,21 @@ export default function AttendancePage() {
       ? empResponse.data
       : [];
 
-  const attendanceList = Array.isArray(attendance)
+  const attendanceListRaw = Array.isArray(attendance)
     ? attendance
     : Array.isArray(attendance?.data)
       ? attendance.data
       : [];
+
+  // Filter for today's attendance only
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const attendanceList = attendanceListRaw.filter((record: any) => {
+    if (!record.checkIn) return false;
+    const checkInDate = new Date(record.checkIn);
+    const checkInStr = checkInDate.toISOString().split("T")[0];
+    return checkInStr === todayStr;
+  });
 
   const presentCount = attendanceList.filter(
     (r: any) => r.status === "present" || r.status === "Present",

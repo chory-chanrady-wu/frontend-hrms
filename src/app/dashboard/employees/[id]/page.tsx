@@ -203,6 +203,11 @@ export default function EmployeeDetailPage() {
                 value={emp.departmentName || "—"}
               />
               <InfoRow
+                icon={<User className="h-4 w-4" />}
+                label="Head of Department"
+                value={emp.headOfDepartmentName || "—"}
+              />
+              <InfoRow
                 icon={<Briefcase className="h-4 w-4" />}
                 label="Position"
                 value={emp.positionName || "—"}

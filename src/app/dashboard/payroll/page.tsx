@@ -1,11 +1,21 @@
 "use client";
 
-import { DollarSign, Calendar, FileText, Download } from "lucide-react";
+import { DollarSign, Calendar, FileText } from "lucide-react";
 import Link from "next/link";
 import { useGetAllPayroll, useDeletePayroll } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
+import { useState } from "react";
 
 export default function PayrollPage() {
+  // Pagination
+  const PAGE_SIZE = 7;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Get current user employeeId
+  let currentEmployeeId = "";
+  if (typeof window !== "undefined") {
+    currentEmployeeId = localStorage.getItem("employeeId") || "";
+  }
   const { data: payroll, isLoading, error } = useGetAllPayroll();
   const { mutate: deletePayroll } = useDeletePayroll();
   const { data: employeesResponse } = useGetAllEmployees();
@@ -16,19 +26,37 @@ export default function PayrollPage() {
       ? payroll.data
       : [];
 
+  // Filter payroll for current user
+  const filteredPayroll = payrollList.filter(
+    (r: any) => String(r.employeeId) === currentEmployeeId,
+  );
+
+  // Paginate
+  const totalPages = Math.ceil(filteredPayroll.length / PAGE_SIZE);
+  const paginatedPayroll = filteredPayroll.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   const employees = Array.isArray(employeesResponse)
     ? employeesResponse
     : Array.isArray(employeesResponse?.data)
       ? employeesResponse.data
       : [];
 
-  const totalNetSalary = payrollList.reduce(
+  // Show summary for current user only
+  const totalNetSalary = filteredPayroll.reduce(
     (sum: number, r: any) => sum + (r.netSalary || 0),
     0,
   );
   const avgSalary =
-    payrollList.length > 0
-      ? Math.round(totalNetSalary / payrollList.length)
+    filteredPayroll.length > 0
+      ? Math.round(
+          filteredPayroll.reduce(
+            (sum: number, r: any) => sum + (r.netSalary || 0),
+            0,
+          ) / filteredPayroll.length,
+        )
       : 0;
 
   return (
@@ -93,7 +121,7 @@ export default function PayrollPage() {
                 Records
               </p>
               <p className="text-3xl font-bold text-orange-900 dark:text-orange-200 mt-2">
-                {payrollList.length}
+                {filteredPayroll.length}
               </p>
             </div>
             <Calendar className="h-12 w-12 text-orange-600 dark:text-orange-400 opacity-20" />
@@ -132,80 +160,92 @@ export default function PayrollPage() {
                   Employee ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Full Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Month
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Net Salary
+                  Year
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Basic Salary
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Bonus
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Actions
+                  View
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {payrollList.length > 0 ? (
-                payrollList.map((record: any) => (
-                  <tr
-                    key={record.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {record.employeeId}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-900 dark:text-slate-100">
-                        {record.month}/{record.year}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        ${record.netSalary?.toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-slate-900 dark:text-slate-100">
-                        ${record.basicSalary?.toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
-                        ${record.bonus?.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
+              {paginatedPayroll.length > 0 ? (
+                paginatedPayroll.map((record: any) => {
+                  const emp = employees.find(
+                    (e: any) => String(e.id) === String(record.employeeId),
+                  );
+                  const monthNames = [
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                  ];
+                  const monthIndex = Number(record.month) - 1;
+                  const monthName =
+                    monthIndex >= 0 && monthIndex < 12
+                      ? monthNames[monthIndex]
+                      : "—";
+                  return (
+                    <tr
+                      key={record.id}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {`EMP-${record.employeeId}`}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900 dark:text-slate-100">
+                          {emp?.fullName || emp?.username || "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900 dark:text-slate-100">
+                          {emp?.email || "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900 dark:text-slate-100">
+                          {monthName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900 dark:text-slate-100">
+                          {record.year || "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
                         <Link
                           href={`/dashboard/payroll/${record.id}`}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                          className="text-blue-600 hover:underline text-sm font-medium"
                         >
                           View
                         </Link>
-                        <button
-                          onClick={() => {
-                            if (confirm("Delete this payroll record?")) {
-                              deletePayroll(record.id);
-                            }
-                          }}
-                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-4 text-center text-slate-500 dark:text-slate-400"
                   >
                     No payroll records found
@@ -213,6 +253,65 @@ export default function PayrollPage() {
                 </tr>
               )}
             </tbody>
+            {/* Pagination Controls */}
+            {filteredPayroll.length > 0 && (
+              <tfoot>
+                <tr>
+                  <td colSpan={6} className="px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+                        {Math.min(
+                          currentPage * PAGE_SIZE,
+                          filteredPayroll.length,
+                        )}{" "}
+                        of {filteredPayroll.length} records
+                      </p>
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p: number) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Previous
+                          </button>
+                          {Array.from(
+                            { length: totalPages },
+                            (_, i) => i + 1,
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`px-3 py-1 text-sm rounded-md ${
+                                page === currentPage
+                                  ? "bg-blue-600 text-white"
+                                  : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p: number) =>
+                                Math.min(totalPages, p + 1),
+                              )
+                            }
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       )}
