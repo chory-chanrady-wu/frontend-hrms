@@ -7,14 +7,16 @@ import { useGetAllAnnouncements } from "@/hooks/announcement-query";
 export default function AnnouncementsPage() {
   const router = useRouter();
   const { data: response, isLoading, error } = useGetAllAnnouncements();
-  const announcements = Array.isArray(response)
+  const announcementsRaw = Array.isArray(response)
     ? response
     : Array.isArray(response?.data)
       ? response.data
       : [];
+  // Filter only active announcements
+  const announcements = announcementsRaw.filter((a: any) => a.status === true);
   // Debug log to verify API response shape and values
   console.log("Announcements API response:", response);
-  console.log("Announcements array:", announcements);
+  console.log("Active announcements array:", announcements);
 
   return (
     <div>

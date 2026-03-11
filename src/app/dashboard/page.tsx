@@ -75,9 +75,18 @@ export default function DashboardPage() {
   const pendingRequests = leaveRequests.filter(
     (l: any) => l.status === "pending" || l.status === "Pending",
   ).length;
-  const onLeave = leaveRequests.filter(
-    (l: any) => l.status === "approved" || l.status === "Approved",
-  ).length;
+  // Calculate employees on leave today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const onLeaveToday = leaveRequests.filter((l: any) => {
+    if (!(l.status === "approved" || l.status === "Approved")) return false;
+    const start = l.startDate ? new Date(l.startDate) : null;
+    const end = l.endDate ? new Date(l.endDate) : null;
+    if (!start || !end) return false;
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    return today >= start && today <= end;
+  }).length;
 
   const isLoading = loadingEmp || loadingAtt || loadingLeave;
 
@@ -178,10 +187,10 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                    On Leave
+                    On Leave Today
                   </p>
                   <p className="mt-2 text-3xl font-bold text-purple-900 dark:text-purple-200">
-                    {onLeave}
+                    {onLeaveToday}
                   </p>
                 </div>
                 <Calendar className="h-10 w-10 text-purple-600 dark:text-purple-400 opacity-30" />

@@ -90,6 +90,7 @@ export default function AttendancePage() {
     checkIn: "",
     checkOut: "",
   });
+  const [markAll, setMarkAll] = useState(false);
 
   // Filter attendance
   const filteredAttendance = attendanceList.filter((record: any) => {
@@ -150,30 +151,53 @@ export default function AttendancePage() {
       ? `${formData.date}T${formData.checkOut}:00`
       : `${formData.date}T00:00:00`;
 
-    const payload = {
-      employeeId: Number(formData.employeeId),
-      checkIn,
-      checkOut,
-      status: formData.status,
-    };
-
-    if (editingRecord) {
-      updateAttendance(
-        { id: editingRecord.id, attData: payload },
-        {
+    if (markAll) {
+      // Batch mark attendance for all employees
+      const batch = employees.map((emp: any) => ({
+        employeeId: emp.id,
+        checkIn,
+        checkOut,
+        status: formData.status,
+      }));
+      // Sequential creation
+      let createdCount = 0;
+      batch.forEach((payload, idx) => {
+        createAttendance(payload, {
+          onSuccess: () => {
+            createdCount++;
+            if (createdCount === batch.length) {
+              setShowModal(false);
+              resetForm();
+              setMarkAll(false);
+            }
+          },
+        });
+      });
+    } else {
+      const payload = {
+        employeeId: Number(formData.employeeId),
+        checkIn,
+        checkOut,
+        status: formData.status,
+      };
+      if (editingRecord) {
+        updateAttendance(
+          { id: editingRecord.id, attData: payload },
+          {
+            onSuccess: () => {
+              setShowModal(false);
+              resetForm();
+            },
+          },
+        );
+      } else {
+        createAttendance(payload, {
           onSuccess: () => {
             setShowModal(false);
             resetForm();
           },
-        },
-      );
-    } else {
-      createAttendance(payload, {
-        onSuccess: () => {
-          setShowModal(false);
-          resetForm();
-        },
-      });
+        });
+      }
     }
   };
 
@@ -446,6 +470,7 @@ export default function AttendancePage() {
                 onClick={() => {
                   setShowModal(false);
                   resetForm();
+                  setMarkAll(false);
                 }}
                 className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
               >
@@ -457,21 +482,39 @@ export default function AttendancePage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Employee *
                 </label>
-                <select
-                  value={formData.employeeId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, employeeId: e.target.value })
-                  }
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Select Employee</option>
-                  {employees.map((emp: any) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.fullName || emp.username || `Employee #${emp.id}`}
-                    </option>
-                  ))}
-                </select>
+                {!markAll && (
+                  <select
+                    value={formData.employeeId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, employeeId: e.target.value })
+                    }
+                    required
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="">Select Employee</option>
+                    {employees.map((emp: any) => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.fullName || emp.username || `Employee #${emp.id}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {editingRecord == null && (
+                  <button
+                    type="button"
+                    className="mt-2 px-3 py-1 text-xs rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border border-blue-300 dark:border-blue-700"
+                    onClick={() => setMarkAll((v) => !v)}
+                  >
+                    {markAll
+                      ? "Mark for single employee"
+                      : "Mark attendance for all employees"}
+                  </button>
+                )}
+                {markAll && (
+                  <div className="mt-2 text-xs text-blue-700 dark:text-blue-200">
+                    Attendance will be marked for all employees.
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
