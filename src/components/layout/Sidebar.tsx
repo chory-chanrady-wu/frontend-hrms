@@ -72,19 +72,6 @@ const navSections = [
     ],
   },
   {
-    title: "Growth",
-    items: [
-      { label: "Performance", href: "/dashboard/performance", icon: Star },
-      {
-        label: "Reviews",
-        href: "/dashboard/performance/reviews",
-        icon: ClipboardList,
-      },
-      { label: "Training", href: "/dashboard/training", icon: GraduationCap },
-      { label: "Courses", href: "/dashboard/training/courses", icon: BookOpen },
-    ],
-  },
-  {
     title: "Recruitment",
     items: [
       { label: "Recruitment", href: "/dashboard/recruitment", icon: Briefcase },
@@ -133,7 +120,6 @@ export default function SidebarNavigation() {
     Overview: true,
     People: false,
     Operations: false,
-    Growth: false,
     Recruitment: false,
     Reports: false,
     Admin: false,
@@ -204,7 +190,7 @@ export default function SidebarNavigation() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:font-medium h-9"
+                        className="cursor-pointer text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:font-medium h-9"
                       >
                         <Link
                           href={item.href}

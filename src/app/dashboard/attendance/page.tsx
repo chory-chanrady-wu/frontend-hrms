@@ -161,18 +161,28 @@ export default function AttendancePage() {
       }));
       // Sequential creation
       let createdCount = 0;
-      batch.forEach((payload, idx) => {
-        createAttendance(payload, {
-          onSuccess: () => {
-            createdCount++;
-            if (createdCount === batch.length) {
-              setShowModal(false);
-              resetForm();
-              setMarkAll(false);
-            }
+      batch.forEach(
+        (
+          payload: {
+            employeeId: number;
+            checkIn: string;
+            checkOut: string;
+            status: string;
           },
-        });
-      });
+          idx: number,
+        ) => {
+          createAttendance(payload, {
+            onSuccess: () => {
+              createdCount++;
+              if (createdCount === batch.length) {
+                setShowModal(false);
+                resetForm();
+                setMarkAll(false);
+              }
+            },
+          });
+        },
+      );
     } else {
       const payload = {
         employeeId: Number(formData.employeeId),
