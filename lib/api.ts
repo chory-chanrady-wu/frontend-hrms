@@ -970,6 +970,34 @@ export const announcementsApi = {
   },
 };
 
+// ==================== JOB POSTINGS ====================
+export const jobPostingsApi = {
+  createJobPosting: async (jobData: any) => {
+    const response = await fetch(`${API_BASE_URL}/job-postings`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(jobData),
+    });
+    return handleResponse(response);
+  },
+
+  getAllJobPostings: async () => {
+    const response = await fetch(`${API_BASE_URL}/job-postings`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  getJobPostingById: async (id: string | number) => {
+    const response = await fetch(`${API_BASE_URL}/job-postings/${id}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+};
+
 // ==================== CLOUDINARY ====================
 export const cloudinaryApi = {
   uploadImage: async (file: File) => {
