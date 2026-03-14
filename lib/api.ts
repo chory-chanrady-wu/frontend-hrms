@@ -1,7 +1,7 @@
 import type { ApiResponse } from "./types";
 import { getAccessToken } from "./auth";
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://114.29.238.125:7777/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const getAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
@@ -325,7 +325,6 @@ export const positionsApi = {
   },
 };
 
-// ==================== EMPLOYEES ====================
 export const employeesApi = {
   createEmployee: async (formData: FormData) => {
     const token = getAccessToken();
@@ -418,6 +417,19 @@ export const employeesApi = {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
+    return handleResponse(response);
+  },
+
+  // Validate employee password
+  validatePassword: async (usernameOrEmail: string, password: string) => {
+    const response = await fetch(
+      `${API_BASE_URL}/employees/validate-password`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ usernameOrEmail, password }),
+      },
+    );
     return handleResponse(response);
   },
 };
@@ -776,9 +788,9 @@ export const payrollApi = {
     employeeId: number;
     month: number;
     year: number;
-    basicSalary: number;
+    baseSalary: number;
     bonus: number;
-    deductions: number;
+    deduction: number;
     netSalary: number;
   }) => {
     const response = await fetch(`${API_BASE_URL}/payroll`, {
@@ -822,9 +834,9 @@ export const payrollApi = {
       employeeId: number;
       month: number;
       year: number;
-      basicSalary: number;
+      baseSalary: number;
       bonus: number;
-      deductions: number;
+      deduction: number;
       netSalary: number;
     },
   ) => {

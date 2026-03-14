@@ -43,9 +43,9 @@ export const useCreatePayroll = () => {
       employeeId: number;
       month: number;
       year: number;
-      basicSalary: number;
+      baseSalary: number;
       bonus: number;
-      deductions: number;
+      deduction: number;
       netSalary: number;
     }) => payrollApi.createPayroll(prData),
     onSuccess: () => {
@@ -66,9 +66,9 @@ export const useUpdatePayroll = () => {
         employeeId: number;
         month: number;
         year: number;
-        basicSalary: number;
+        baseSalary: number;
         bonus: number;
-        deductions: number;
+        deduction: number;
         netSalary: number;
       };
     }) => payrollApi.updatePayroll(id, prData),

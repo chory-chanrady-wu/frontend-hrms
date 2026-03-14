@@ -6,6 +6,7 @@ import { useGetPayrollById } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 
 import { useParams } from "next/navigation";
+import { employeesApi } from "@/lib/api";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -26,17 +27,28 @@ export default function PayrollDetailPage() {
     setPasswordError("");
     setLoading(true);
     try {
-      // Call backend API to validate password
-      const res = await fetch(
-        "http://localhost:7777/api/v1/employees/validate-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ usernameOrEmail: username, password }),
-        },
+      // Get employeeId from localStorage or employee object
+      let usernameOrEmail = null;
+      if (typeof window !== "undefined") {
+        usernameOrEmail = localStorage.getItem("email");
+        if (!usernameOrEmail) {
+          usernameOrEmail = localStorage.getItem("username");
+        }
+      }
+      if (!usernameOrEmail && employee) {
+        usernameOrEmail = employee.email || employee.username;
+      }
+      if (!usernameOrEmail) {
+        setPasswordError("Employee email or username not found.");
+        setLoading(false);
+        return;
+      }
+      // Use employeesApi.validatePassword
+      const result = await employeesApi.validatePassword(
+        usernameOrEmail,
+        password,
       );
-      const isValid = await res.json();
-      if (isValid === true) {
+      if (result === true || result?.valid === true) {
         setShowPasswordModal(false);
       } else {
         setPasswordError("Invalid password. Please try again.");
@@ -188,7 +200,10 @@ export default function PayrollDetailPage() {
                   Net Salary
                 </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  ${payroll.netSalary?.toLocaleString()}
+                  ${payroll.netSalary?.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <div>
@@ -196,7 +211,13 @@ export default function PayrollDetailPage() {
                   Basic Salary
                 </p>
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  ${payroll.basicSalary?.toLocaleString()}
+                  $
+                  {typeof payroll.baseSalary === "number"
+                    ? payroll.baseSalary.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
+                    : "0.00"}
                 </p>
               </div>
               <div>
@@ -229,7 +250,13 @@ export default function PayrollDetailPage() {
                   Basic Salary
                 </span>
                 <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  ${payroll.basicSalary?.toLocaleString()}
+                  $
+                  {typeof payroll.baseSalary === "number"
+                    ? payroll.baseSalary.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
+                    : "0.00"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700">
@@ -237,7 +264,10 @@ export default function PayrollDetailPage() {
                   Bonus
                 </span>
                 <span className="font-semibold text-green-600 dark:text-green-400">
-                  +${payroll.bonus?.toLocaleString()}
+                  +${payroll.bonus?.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-700">
@@ -245,7 +275,10 @@ export default function PayrollDetailPage() {
                   Deductions
                 </span>
                 <span className="font-semibold text-red-600 dark:text-red-400">
-                  -${payroll.deductions?.toLocaleString()}
+                  -${payroll.deduction?.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
               <div className="flex items-center justify-between py-3">

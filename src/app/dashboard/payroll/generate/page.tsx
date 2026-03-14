@@ -8,6 +8,8 @@ import { useCreatePayroll } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 
 export default function GeneratePayrollPage() {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
   const router = useRouter();
   const { mutate: createPayroll, isPending } = useCreatePayroll();
   const { data: employeesResponse } = useGetAllEmployees();
@@ -22,28 +24,50 @@ export default function GeneratePayrollPage() {
     employeeId: "",
     month: "",
     year: "",
-    basicSalary: "",
     bonusPercent: "",
-    deductions: "",
+    deduction: "",
   });
 
   const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const employeeId = e.target.value;
-    const selectedEmp = employees.find(
-      (emp: any) => String(emp.id) === employeeId,
-    );
     setFormData((prev) => ({
       ...prev,
       employeeId,
-      basicSalary: selectedEmp ? String(selectedEmp.salary ?? "") : "",
     }));
   };
 
-  const basicSalary = Number(formData.basicSalary) || 0;
+  // Always get baseSalary from selected employee, robustly
+  const selectedEmp = employees.find(
+    (emp: any) => String(emp.id) === formData.employeeId,
+  );
+  let baseSalary = 0;
+  if (selectedEmp) {
+    const salary = selectedEmp.salary;
+    if (typeof salary === "number" && !isNaN(salary)) {
+      baseSalary = salary;
+    } else if (
+      typeof salary === "string" &&
+      salary.trim() !== "" &&
+      !isNaN(Number(salary))
+    ) {
+      baseSalary = Number(salary);
+    }
+  }
+  // Debug log
+  if (typeof window !== "undefined") {
+    console.log(
+      "selectedEmp",
+      selectedEmp,
+      "salary",
+      selectedEmp?.salary,
+      "baseSalary",
+      baseSalary,
+    );
+  }
   const bonusPercent = Number(formData.bonusPercent) || 0;
-  const bonus = basicSalary * (bonusPercent / 100);
-  const deductions = Number(formData.deductions) || 0;
-  const netSalary = basicSalary + bonus - deductions;
+  const bonus = baseSalary * (bonusPercent / 100);
+  const deduction = Number(formData.deduction) || 0;
+  const netSalary = baseSalary + bonus - deduction;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -56,14 +80,19 @@ export default function GeneratePayrollPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Defensive: ensure employee is selected
+    if (!selectedEmp) {
+      alert("Please select an employee.");
+      return;
+    }
     createPayroll(
       {
         employeeId: Number(formData.employeeId),
         month: Number(formData.month),
         year: Number(formData.year),
-        basicSalary,
+        baseSalary,
         bonus,
-        deductions,
+        deduction,
         netSalary,
       },
       {
@@ -164,9 +193,11 @@ export default function GeneratePayrollPage() {
                   className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 >
                   <option value="">Select year</option>
-                  <option value="2026">2026</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -196,16 +227,16 @@ export default function GeneratePayrollPage() {
 
               <div>
                 <label
-                  htmlFor="deductions"
+                  htmlFor="deduction"
                   className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                 >
-                  Deductions
+                  Deduction
                 </label>
                 <input
                   type="number"
-                  id="deductions"
-                  name="deductions"
-                  value={formData.deductions}
+                  id="deduction"
+                  name="deduction"
+                  value={formData.deduction}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="0.00"

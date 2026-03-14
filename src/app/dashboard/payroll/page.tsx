@@ -5,11 +5,18 @@ import Link from "next/link";
 import { useGetAllPayroll, useDeletePayroll } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function PayrollPage() {
-  // Pagination
-  const PAGE_SIZE = 7;
-  const [currentPage, setCurrentPage] = useState(1);
+  // Year-based pagination
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   // Get current user employeeId
   let currentEmployeeId = "";
@@ -17,7 +24,6 @@ export default function PayrollPage() {
     currentEmployeeId = localStorage.getItem("employeeId") || "";
   }
   const { data: payroll, isLoading, error } = useGetAllPayroll();
-  const { mutate: deletePayroll } = useDeletePayroll();
   const { data: employeesResponse } = useGetAllEmployees();
 
   const payrollList = Array.isArray(payroll)
@@ -31,12 +37,25 @@ export default function PayrollPage() {
     (r: any) => String(r.employeeId) === currentEmployeeId,
   );
 
-  // Paginate
-  const totalPages = Math.ceil(filteredPayroll.length / PAGE_SIZE);
-  const paginatedPayroll = filteredPayroll.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
+  // Sort by year and month descending
+  const sortedPayroll = [...filteredPayroll].sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year;
+    return b.month - a.month;
+  });
+
+  // Extract unique years (descending)
+  const years = Array.from(new Set(sortedPayroll.map((r) => r.year))).sort(
+    (a, b) => b - a,
   );
+  // Set default selectedYear to most recent year
+  if (selectedYear === null && years.length > 0) {
+    setSelectedYear(years[0]);
+  }
+
+  // Filter payroll by selected year
+  const yearPayroll = selectedYear
+    ? sortedPayroll.filter((r) => r.year === selectedYear)
+    : sortedPayroll;
 
   const employees = Array.isArray(employeesResponse)
     ? employeesResponse
@@ -44,26 +63,18 @@ export default function PayrollPage() {
       ? employeesResponse.data
       : [];
 
-  // Show summary for current user only
-  const totalNetSalary = filteredPayroll.reduce(
+  // Show summary for current user only (for selected year)
+  const totalNetSalary = yearPayroll.reduce(
     (sum: number, r: any) => sum + (r.netSalary || 0),
     0,
   );
   const avgSalary =
-    filteredPayroll.length > 0
+    yearPayroll.length > 0
       ? Math.round(
-    import {
-      Table,
-      TableBody,
-      TableCell,
-      TableHead,
-      TableHeader,
-      TableRow,
-    } from "@/components/ui/table";
-          filteredPayroll.reduce(
+          yearPayroll.reduce(
             (sum: number, r: any) => sum + (r.netSalary || 0),
             0,
-          ) / filteredPayroll.length,
+          ) / yearPayroll.length,
         )
       : 0;
 
@@ -109,19 +120,6 @@ export default function PayrollPage() {
             <DollarSign className="h-12 w-12 text-green-600 dark:text-green-400 opacity-20" />
           </div>
         </div>
-        <div className="bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                Employees
-              </p>
-              <p className="text-3xl font-bold text-purple-900 dark:text-purple-200 mt-2">
-                {employees.length}
-              </p>
-            </div>
-            <FileText className="h-12 w-12 text-purple-600 dark:text-purple-400 opacity-20" />
-          </div>
-        </div>
         <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -155,38 +153,37 @@ export default function PayrollPage() {
       )}
 
       {!isLoading && !error && (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Payroll History
-            </h2>
+        <>
+          {/* Year Pagination */}
+          <div className="flex gap-2 mb-4">
+            {years.map((year) => (
+              <button
+                key={year}
+                onClick={() => setSelectedYear(year)}
+                className={`px-4 py-2 rounded-md font-medium border transition-all ${
+                  year === selectedYear
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600"
+                }`}
+              >
+                {year}
+              </button>
+            ))}
           </div>
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Employee ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Full Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Month
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Year
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  View
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedPayroll.length > 0 ? (
-                paginatedPayroll.map((record: any) => {
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Employee ID</TableHead>
+                <TableHead>Full Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Month</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead>View</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {yearPayroll.length > 0 ? (
+                yearPayroll.map((record: any) => {
                   const emp = employees.find(
                     (e: any) => String(e.id) === String(record.employeeId),
                   );
@@ -208,89 +205,43 @@ export default function PayrollPage() {
                   const monthName =
                     monthIndex >= 0 && monthIndex < 12
                       ? monthNames[monthIndex]
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableCell>
-                      Employee ID
-                    </TableCell>
-                    <TableCell>
-                      Full Name
-                    </TableCell>
-                    <TableCell>
-                      Email
-                    </TableCell>
-                    <TableCell>
-                      Month
-                    </TableCell>
-                    <TableCell>
-                      Year
-                    </TableCell>
-                    <TableCell>
-                      View
-                    </TableCell>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedPayroll.length > 0 ? (
-                    paginatedPayroll.map((record: any) => {
-                      const emp = employees.find(
-                        (e: any) => String(e.id) === String(record.employeeId),
-                      );
-                      const monthNames = [
-                        "January",
-                        "February",
-                        "March",
-                        "April",
-                        "May",
-                        "June",
-                        "July",
-                        "August",
-                        "September",
-                        "October",
-                        "November",
-                        "December",
-                      ];
-                      const monthIndex = Number(record.month) - 1;
-                      const monthName =
-                        monthIndex >= 0 && monthIndex < 12
-                          ? monthNames[monthIndex]
-                          : "—";
-                      return (
-                        <TableRow key={record.id}>
-                          <TableCell>
-                            {`EMP-${record.employeeId}`}
-                          </TableCell>
-                          <TableCell>
-                            {emp?.fullName || emp?.username || "—"}
-                          </TableCell>
-                          <TableCell>
-                            {emp?.email || "—"}
-                          </TableCell>
-                          <TableCell>
-                            {monthName}
-                          </TableCell>
-                          <TableCell>
-                            {record.year || "—"}
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/dashboard/payroll/${record.id}`}
-                              className="text-blue-600 hover:underline text-sm font-medium"
-                            >
-                              View
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-slate-500 dark:text-slate-400">
-                        No payroll records found
+                      : "—";
+                  return (
+                    <TableRow key={record.id}>
+                      <TableCell>{`EMP-${record.employeeId}`}</TableCell>
+                      <TableCell>
+                        {emp?.fullName || emp?.username || "—"}
+                      </TableCell>
+                      <TableCell>{emp?.email || "—"}</TableCell>
+                      <TableCell>{monthName}</TableCell>
+                      <TableCell>{record.year || "—"}</TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/dashboard/payroll/${record.id}`}
+                          className="text-blue-600 hover:underline text-sm font-medium"
+                        >
+                          View
+                        </Link>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-                          ))}
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center text-slate-500 dark:text-slate-400"
+                  >
+                    No payroll records found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </>
+      )}
+
+      {/* Pagination Controls removed: now year-based */}
+    </div>
+  );
+}
