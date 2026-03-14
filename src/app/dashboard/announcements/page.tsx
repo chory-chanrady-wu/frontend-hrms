@@ -1,8 +1,20 @@
 "use client";
 
-import { Bell, Calendar, User, CheckCircle, XCircle } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  User,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Pencil,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useGetAllAnnouncements } from "@/hooks/announcement-query";
+import { announcementsApi } from "@/lib/api";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,20 +23,52 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 
 export default function AnnouncementsPage() {
   const router = useRouter();
-  const { data: response, isLoading, error } = useGetAllAnnouncements();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useGetAllAnnouncements();
   const announcementsRaw = Array.isArray(response)
     ? response
     : Array.isArray(response?.data)
       ? response.data
       : [];
-  // Filter only active announcements
-  const announcements = announcementsRaw.filter((a: any) => a.status === true);
+  // Show all announcements (active and inactive)
+  const announcements = announcementsRaw;
   // Debug log to verify API response shape and values
-  console.log("Announcements API response:", response);
-  console.log("Active announcements array:", announcements);
+  // console.log("Announcements API response:", response);
+  // console.log("Announcements array:", announcements);
+
+  async function handleDelete(id: number) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this announcement? This action cannot be undone.",
+      )
+    )
+      return;
+    setDeletingId(id);
+    try {
+      await announcementsApi.deleteAnnouncement(id);
+      await refetch();
+    } catch (e) {
+      alert("Failed to delete announcement.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div>
@@ -57,16 +101,34 @@ export default function AnnouncementsPage() {
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Priority</TableHead>
             <TableHead>Created By</TableHead>
             <TableHead>Published At</TableHead>
             <TableHead>Expires At</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {announcements.map((announcement: any) => (
-            <TableRow key={announcement.id}>
+            <TableRow
+              key={announcement.id}
+              onClick={(e) => {
+                // Prevent row click if clicking on a button or link inside actions
+                if (
+                  (e.target as HTMLElement).closest('button, [role="menuitem"]')
+                )
+                  return;
+                router.push(`/dashboard/announcements/${announcement.id}`);
+              }}
+              className={
+                "cursor-pointer transition hover:bg-slate-100 dark:hover:bg-slate-800" +
+                (deletingId === announcement.id
+                  ? " opacity-60 pointer-events-none"
+                  : "")
+              }
+            >
               <TableCell>
-                <div className={`flex items-center gap-3`}>
+                <div className="flex items-center gap-3">
                   <span
                     className={`p-2 rounded-lg ${
                       announcement.priority === "high"
@@ -90,7 +152,7 @@ export default function AnnouncementsPage() {
                     <div className="font-semibold text-slate-900 dark:text-slate-100">
                       {announcement.title}
                     </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                    <div className="max-w-xl text-xs text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-line">
                       {announcement.content}
                     </div>
                   </div>
@@ -108,6 +170,12 @@ export default function AnnouncementsPage() {
                   >
                     {announcement.status ? "Active" : "Inactive"}
                   </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <TriangleAlert className="h-4 w-4" />
+                  <span>{announcement.priority}</span>
                 </div>
               </TableCell>
               <TableCell>
@@ -166,6 +234,54 @@ export default function AnnouncementsPage() {
                 ) : (
                   <span className="text-xs text-slate-400">—</span>
                 )}
+              </TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="More actions"
+                      tabIndex={0}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="dark:bg-slate-900 dark:text-white text-black border-slate-700 bg-white"
+                  >
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/announcements/${announcement.id}`,
+                        )
+                      }
+                    >
+                      <Eye className="h-4 w-4 mr-2 text-green-600" /> View
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/announcements/${announcement.id}/edit`,
+                        )
+                      }
+                    >
+                      <Pencil className="h-4 w-4 mr-2 text-blue-600" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDelete(announcement.id)}
+                      className="text-red-600 focus:text-red-600"
+                      disabled={deletingId === announcement.id}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {deletingId === announcement.id
+                        ? "Deleting..."
+                        : "Delete"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

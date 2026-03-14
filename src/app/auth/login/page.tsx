@@ -117,8 +117,10 @@ export default function LoginPage() {
         if (data.user?.id) localStorage.setItem("userId", String(data.user.id));
         if (data.user?.employeeId)
           localStorage.setItem("employeeId", String(data.user.employeeId));
-        if (data.user?.username) localStorage.setItem("username", data.user.username);
-        if (data.user?.fullName) localStorage.setItem("fullName", data.user.fullName);
+        if (data.user?.username)
+          localStorage.setItem("username", data.user.username);
+        if (data.user?.fullName)
+          localStorage.setItem("fullName", data.user.fullName);
         if (data.user?.email) localStorage.setItem("email", data.user.email);
 
         // Fallback: decode JWT to extract userId if not in response body

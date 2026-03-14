@@ -200,7 +200,8 @@ export default function PayrollDetailPage() {
                   Net Salary
                 </p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  ${payroll.netSalary?.toLocaleString(undefined, {
+                  $
+                  {payroll.netSalary?.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -264,7 +265,8 @@ export default function PayrollDetailPage() {
                   Bonus
                 </span>
                 <span className="font-semibold text-green-600 dark:text-green-400">
-                  +${payroll.bonus?.toLocaleString(undefined, {
+                  +$
+                  {payroll.bonus?.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -275,7 +277,8 @@ export default function PayrollDetailPage() {
                   Deductions
                 </span>
                 <span className="font-semibold text-red-600 dark:text-red-400">
-                  -${payroll.deduction?.toLocaleString(undefined, {
+                  -$
+                  {payroll.deduction?.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
