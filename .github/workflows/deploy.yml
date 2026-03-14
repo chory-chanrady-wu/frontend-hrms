@@ -1,7 +1,7 @@
 name: HRMS Frontend CI/CD
 on:
   push:
-    branches: 
+    branches:
       - master
   pull_request:
     branches:
@@ -55,14 +55,14 @@ jobs:
             # Load NVM to ensure Node/NPM are in the PATH
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            
+
             # Navigate to your project folder
-            cd /var/www/my-next-app
-            
+            cd /var/www/html/index
+
             # Update code and rebuild
             git pull origin master
             pnpm install
             pnpm run build
-            
+
             # Restart your app using PM2
             pm2 restart next-app || pm2 start pnpm --name "next-app" -- start
