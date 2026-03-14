@@ -41,9 +41,6 @@ importers:
       react-select:
         specifier: ^5.10.2
         version: 5.10.2(@types/react@19.2.10)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      root:
-        specifier: git+https://github.com/tanstack/react-query.git
-        version: git+https://github.com/tanstack/react-query.git#fe25edc2f9fb231004563fb65320983b5a5a905e
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -3409,10 +3406,6 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
-
-  root@git+https://github.com/tanstack/react-query.git#fe25edc2f9fb231004563fb65320983b5a5a905e:
-    resolution: {commit: fe25edc2f9fb231004563fb65320983b5a5a905e, repo: https://github.com/tanstack/react-query.git, type: git}
-    version: 0.0.0
 
   router@2.2.0:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
@@ -7464,8 +7457,6 @@ snapshots:
   rettime@0.10.1: {}
 
   reusify@1.1.0: {}
-
-  root@git+https://github.com/tanstack/react-query.git#fe25edc2f9fb231004563fb65320983b5a5a905e: {}
 
   router@2.2.0:
     dependencies:
