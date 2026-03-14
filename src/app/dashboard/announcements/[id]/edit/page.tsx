@@ -57,6 +57,31 @@ export default function AnnouncementEditPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    // Validate publish/expire dates
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (form.publishedAt) {
+      const publishDate = new Date(form.publishedAt);
+      if (publishDate < now) {
+        setError("Published At must be today or in the future.");
+        return;
+      }
+    }
+    if (form.expiresAt) {
+      const expireDate = new Date(form.expiresAt);
+      if (expireDate < now) {
+        setError("Expires At must be today or in the future.");
+        return;
+      }
+    }
+    if (form.publishedAt && form.expiresAt) {
+      const publishDate = new Date(form.publishedAt);
+      const expireDate = new Date(form.expiresAt);
+      if (publishDate > expireDate) {
+        setError("Published At must be before Expires At.");
+        return;
+      }
+    }
     updateAnnouncement.mutate(
       {
         id: form.id,
@@ -193,65 +218,6 @@ export default function AnnouncementEditPage() {
                   : ""
               }
               onChange={(e) => handleDateChange("expiresAt", e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">
-              Created At
-            </label>
-            <Input
-              type="datetime-local"
-              name="createdAt"
-              value={
-                form.createdAt
-                  ? format(new Date(form.createdAt), "yyyy-MM-dd'T'HH:mm")
-                  : ""
-              }
-              onChange={(e) => handleDateChange("createdAt", e.target.value)}
-              disabled
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">
-              Updated At
-            </label>
-            <Input
-              type="datetime-local"
-              name="updatedAt"
-              value={
-                form.updatedAt
-                  ? format(new Date(form.updatedAt), "yyyy-MM-dd'T'HH:mm")
-                  : ""
-              }
-              onChange={(e) => handleDateChange("updatedAt", e.target.value)}
-              disabled
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">
-              Created By (ID)
-            </label>
-            <Input
-              name="createdById"
-              value={form.createdById}
-              onChange={handleChange}
-              type="number"
-              disabled
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">
-              Created By (Name)
-            </label>
-            <Input
-              name="createdByName"
-              value={form.createdByName}
-              onChange={handleChange}
-              disabled
             />
           </div>
         </div>

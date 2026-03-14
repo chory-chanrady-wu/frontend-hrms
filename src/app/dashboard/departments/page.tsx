@@ -238,7 +238,7 @@ export default function DepartmentsPage() {
                             href={`/dashboard/departments/${dept.id}/edit`}
                             className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4 text-blue-600" />
                           </Link>
                           <button
                             onClick={() => handleDelete(dept.id)}
@@ -253,7 +253,7 @@ export default function DepartmentsPage() {
                                 : "Delete"
                             }
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-red-600" />
                           </button>
                         </div>
                       </TableCell>
