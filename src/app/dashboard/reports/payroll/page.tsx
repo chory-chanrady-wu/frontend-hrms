@@ -58,6 +58,15 @@ export default function PayrollReportsPage() {
       prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field],
     );
   };
+  // Format month as 'MMMM'
+  function formatMonth(month: number | string | undefined) {
+    if (!month) return "";
+    const monthNum = Number(month);
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) return String(month);
+    return new Date(2000, monthNum - 1, 1).toLocaleString("en-US", {
+      month: "long",
+    });
+  }
   // State for fetched payroll data
   const [payrollData, setPayrollData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,6 +97,17 @@ export default function PayrollReportsPage() {
       setLoading(false);
     }
   };
+  // Format money as '1,000.00$'
+  function formatMoney(value: number | string | undefined) {
+    const num = Number(value);
+    if (isNaN(num)) return String(value ?? "");
+    return (
+      num.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + "$"
+    );
+  }
 
   // Export to Excel
   const handleExportExcel = () => {
@@ -95,7 +115,15 @@ export default function PayrollReportsPage() {
     const exportData = payrollData.map((item) => {
       const row: Record<string, any> = {};
       selectedFields.forEach((field) => {
-        row[field] = item[field];
+        row[field] = ["baseSalary", "bonus", "deduction", "netSalary"].includes(
+          field,
+        )
+          ? formatMoney(item[field])
+          : field === "month"
+            ? formatMonth(item[field])
+            : ["createdAt", "updatedAt"].includes(field)
+              ? formatDate(item[field])
+              : item[field];
       });
       return row;
     });
@@ -116,7 +144,16 @@ export default function PayrollReportsPage() {
     payrollData.forEach((item) => {
       html += `<tr>`;
       selectedFields.forEach((field) => {
-        html += `<td>${item[field] ?? ""}</td>`;
+        let value = ["baseSalary", "bonus", "deduction", "netSalary"].includes(
+          field,
+        )
+          ? formatMoney(item[field])
+          : field === "month"
+            ? formatMonth(item[field])
+            : ["createdAt", "updatedAt"].includes(field)
+              ? formatDate(item[field])
+              : (item[field] ?? "");
+        html += `<td>${value}</td>`;
       });
       html += `</tr>`;
     });
@@ -263,9 +300,18 @@ export default function PayrollReportsPage() {
                             key={field}
                             className="px-2 py-1 dark:border-slate-700 dark:text-slate-100"
                           >
-                            {["createdAt", "updatedAt"].includes(field)
-                              ? formatDate(row[field])
-                              : String(row[field] ?? "")}
+                            {[
+                              "baseSalary",
+                              "bonus",
+                              "deduction",
+                              "netSalary",
+                            ].includes(field)
+                              ? formatMoney(row[field])
+                              : field === "month"
+                                ? formatMonth(row[field])
+                                : ["createdAt", "updatedAt"].includes(field)
+                                  ? formatDate(row[field])
+                                  : String(row[field] ?? "")}
                           </TableCell>
                         ))}
                       </TableRow>
