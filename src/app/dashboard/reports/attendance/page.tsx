@@ -14,6 +14,14 @@ export default function AttendanceReportsPage() {
   const handleUnselectAllFields = () => {
     setSelectedFields([]);
   };
+  import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table";
   const { data, isLoading, error } = useGetAllAttendance();
 
   // Get all possible fields from the first data item
@@ -217,7 +225,34 @@ export default function AttendanceReportsPage() {
                     >
                       {field}
                     </th>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {selectedFields.map((field) => (
+                      <TableHead
+                        key={field}
+                        className="px-2 py-1 text-left text-slate-700 border-b"
+                      >
+                        {field}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((item, idx) => (
+                    <TableRow key={item.id || idx}>
+                      {selectedFields.map((field) => (
+                        <TableCell
+                          key={field}
+                          className="px-2 py-1 border-b dark:border-slate-700 dark:text-slate-100"
+                        >
+                          {String(item[field] ?? "")}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   ))}
+                </TableBody>
+              </Table>
                 </tr>
               </thead>
               <tbody>

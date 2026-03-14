@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Clock,
   Calendar,
   CheckCircle,
@@ -323,58 +331,58 @@ export default function AttendancePage() {
 
       {!isLoading && !error && (
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Employee
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Check In
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Check Out
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedAttendance.length > 0 ? (
                 paginatedAttendance.map((record: any) => (
-                  <tr
+                  <TableRow
                     key={record.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {record.employeeName ||
                           `Employee #${record.employeeId}`}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
                         {formatDate(record.checkIn)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
                         {formatTime(record.checkIn)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
                         {formatTime(record.checkOut)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           record.status === "present" ||
@@ -388,8 +396,8 @@ export default function AttendancePage() {
                       >
                         {record.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => openEdit(record)}
@@ -404,22 +412,21 @@ export default function AttendancePage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={6}
                     className="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
                     No attendance records found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-
+            </TableBody>
+          </Table>
           {/* Pagination */}
           {filteredAttendance.length > 0 && (
             <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">

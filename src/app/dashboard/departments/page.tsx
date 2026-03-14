@@ -8,6 +8,14 @@ import {
   useDeleteDepartment,
 } from "@/hooks/department-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function DepartmentsPage() {
   const { data: response, isLoading, error } = useGetAllDepartments();
@@ -152,47 +160,37 @@ export default function DepartmentsPage() {
         </div>
       )}
 
-      {/* Departments Table */}
+      {/* Departments Table (shadcn/ui) */}
       {!isLoading && !error && (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden dark:bg-slate-800 dark:border-slate-700">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 dark:bg-slate-700/50 dark:border-slate-600">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    #
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Department
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-6 py-3">#</TableHead>
+                  <TableHead className="px-6 py-3">Department</TableHead>
+                  <TableHead className="px-6 py-3">Description</TableHead>
+                  <TableHead className="px-6 py-3">
                     Head of Department
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Employees
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  </TableHead>
+                  <TableHead className="px-6 py-3">Employees</TableHead>
+                  <TableHead className="px-6 py-3">Status</TableHead>
+                  <TableHead className="px-6 py-3 text-right">
                     Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {paginatedDepts.length > 0 ? (
                   paginatedDepts.map((dept: any, index: number) => (
-                    <tr
+                    <TableRow
                       key={dept.id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition"
                     >
-                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                      <TableCell className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                         {startIndex + index + 1}
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
                         <Link
                           href={`/dashboard/departments/${dept.id}`}
                           className="flex items-center gap-3"
@@ -204,24 +202,24 @@ export default function DepartmentsPage() {
                             {dept.name}
                           </span>
                         </Link>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">
                         {dept.description || "No description"}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                         {dept.headOfDepartmentName || (
                           <span className="text-slate-400 dark:text-slate-500 italic">
                             Not assigned
                           </span>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
                         <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-slate-100">
                           <Users className="h-4 w-4 text-slate-400" />
                           {employeeCountByDept[dept.id] || 0}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
                             (employeeCountByDept[dept.id] || 0) > 0
@@ -233,8 +231,8 @@ export default function DepartmentsPage() {
                             ? "Active"
                             : "Inactive"}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/dashboard/departments/${dept.id}/edit`}
@@ -258,23 +256,22 @@ export default function DepartmentsPage() {
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 ) : (
-                  <tr>
-                    <td
+                  <TableRow>
+                    <TableCell
                       colSpan={7}
                       className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
                     >
                       No departments found
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-
           {/* Pagination */}
           {filteredDepts.length > 0 && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700">

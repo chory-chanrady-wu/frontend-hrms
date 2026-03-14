@@ -52,6 +52,14 @@ export default function PayrollPage() {
   const avgSalary =
     filteredPayroll.length > 0
       ? Math.round(
+    import {
+      Table,
+      TableBody,
+      TableCell,
+      TableHead,
+      TableHeader,
+      TableRow,
+    } from "@/components/ui/table";
           filteredPayroll.reduce(
             (sum: number, r: any) => sum + (r.netSalary || 0),
             0,
@@ -200,121 +208,89 @@ export default function PayrollPage() {
                   const monthName =
                     monthIndex >= 0 && monthIndex < 12
                       ? monthNames[monthIndex]
-                      : "—";
-                  return (
-                    <tr
-                      key={record.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {`EMP-${record.employeeId}`}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-900 dark:text-slate-100">
-                          {emp?.fullName || emp?.username || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-900 dark:text-slate-100">
-                          {emp?.email || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-900 dark:text-slate-100">
-                          {monthName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-900 dark:text-slate-100">
-                          {record.year || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/dashboard/payroll/${record.id}`}
-                          className="text-blue-600 hover:underline text-sm font-medium"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-4 text-center text-slate-500 dark:text-slate-400"
-                  >
-                    No payroll records found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            {/* Pagination Controls */}
-            {filteredPayroll.length > 0 && (
-              <tfoot>
-                <tr>
-                  <td colSpan={6} className="px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Showing {(currentPage - 1) * PAGE_SIZE + 1}–
-                        {Math.min(
-                          currentPage * PAGE_SIZE,
-                          filteredPayroll.length,
-                        )}{" "}
-                        of {filteredPayroll.length} records
-                      </p>
-                      {totalPages > 1 && (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() =>
-                              setCurrentPage((p: number) => Math.max(1, p - 1))
-                            }
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Previous
-                          </button>
-                          {Array.from(
-                            { length: totalPages },
-                            (_, i) => i + 1,
-                          ).map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => setCurrentPage(page)}
-                              className={`px-3 py-1 text-sm rounded-md ${
-                                page === currentPage
-                                  ? "bg-blue-600 text-white"
-                                  : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                              }`}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableCell>
+                      Employee ID
+                    </TableCell>
+                    <TableCell>
+                      Full Name
+                    </TableCell>
+                    <TableCell>
+                      Email
+                    </TableCell>
+                    <TableCell>
+                      Month
+                    </TableCell>
+                    <TableCell>
+                      Year
+                    </TableCell>
+                    <TableCell>
+                      View
+                    </TableCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedPayroll.length > 0 ? (
+                    paginatedPayroll.map((record: any) => {
+                      const emp = employees.find(
+                        (e: any) => String(e.id) === String(record.employeeId),
+                      );
+                      const monthNames = [
+                        "January",
+                        "February",
+                        "March",
+                        "April",
+                        "May",
+                        "June",
+                        "July",
+                        "August",
+                        "September",
+                        "October",
+                        "November",
+                        "December",
+                      ];
+                      const monthIndex = Number(record.month) - 1;
+                      const monthName =
+                        monthIndex >= 0 && monthIndex < 12
+                          ? monthNames[monthIndex]
+                          : "—";
+                      return (
+                        <TableRow key={record.id}>
+                          <TableCell>
+                            {`EMP-${record.employeeId}`}
+                          </TableCell>
+                          <TableCell>
+                            {emp?.fullName || emp?.username || "—"}
+                          </TableCell>
+                          <TableCell>
+                            {emp?.email || "—"}
+                          </TableCell>
+                          <TableCell>
+                            {monthName}
+                          </TableCell>
+                          <TableCell>
+                            {record.year || "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              href={`/dashboard/payroll/${record.id}`}
+                              className="text-blue-600 hover:underline text-sm font-medium"
                             >
-                              {page}
-                            </button>
+                              View
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-slate-500 dark:text-slate-400">
+                        No payroll records found
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
                           ))}
-                          <button
-                            onClick={() =>
-                              setCurrentPage((p: number) =>
-                                Math.min(totalPages, p + 1),
-                              )
-                            }
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Next
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}

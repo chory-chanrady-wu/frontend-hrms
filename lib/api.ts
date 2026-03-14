@@ -1,7 +1,7 @@
 import type { ApiResponse } from "./types";
 import { getAccessToken } from "./auth";
 
-const API_BASE_URL = "http://localhost:7777/api/v1";
+const API_BASE_URL = process.env.API_BASE_URL || "http://114.29.238.125:7777/api/v1";
 
 const getAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {

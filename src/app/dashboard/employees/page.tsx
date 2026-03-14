@@ -1,6 +1,14 @@
 "use client";
 
 import { Mail, Edit, Trash2, Loader2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGetAllEmployees, useDeleteEmployee } from "@/hooks/employee-query";
@@ -148,43 +156,43 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Employees Table */}
+      {/* Employees Table (shadcn/ui) */}
       {!error && (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden dark:bg-slate-800 dark:border-slate-700">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200 dark:bg-slate-700 dark:border-slate-600">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Employee
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Department
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Position
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                </TableHead>
+                <TableHead className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedEmployees.length > 0 ? (
                 paginatedEmployees.map((employee) => (
-                  <tr
+                  <TableRow
                     key={employee.id}
                     onClick={() =>
                       router.push(`/dashboard/employees/${employee.id}`)
                     }
                     className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         {employee.imageUrl ? (
                           <img
@@ -211,24 +219,24 @@ export default function EmployeesPage() {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                         <Mail className="h-4 w-4" />
                         {employee.email}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-900 dark:text-slate-100">
                         {employee.departmentName}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-300">
                         {employee.positionName}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           employee.status === true
@@ -238,8 +246,8 @@ export default function EmployeesPage() {
                       >
                         {employee.status === true ? "Active" : "Inactive"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div
                         className="flex justify-end gap-2"
                         onClick={(e) => e.stopPropagation()}
@@ -257,22 +265,21 @@ export default function EmployeesPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={6}
                     className="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
                     No employees found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-
+            </TableBody>
+          </Table>
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">

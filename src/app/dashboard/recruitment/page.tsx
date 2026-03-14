@@ -27,7 +27,7 @@ export default function RecruitmentPage() {
   const [loading, setLoading] = useState(false);
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 8;
+  const jobsPerPage = 9;
   const totalPages = Math.ceil(jobPostings.length / jobsPerPage);
   const paginatedJobs = jobPostings.slice(
     (currentPage - 1) * jobsPerPage,
@@ -161,11 +161,6 @@ export default function RecruitmentPage() {
 
       {/* Open Positions */}
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden dark:bg-slate-800 dark:border-slate-700">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 overflow-visible">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Open Positions
-          </h2>
-        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -192,7 +187,7 @@ export default function RecruitmentPage() {
                     {job.jobTitle}
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Posted {new Date(job.postingDate).toLocaleDateString()}
+                    Posted on {new Date(job.postingDate).toLocaleDateString()}
                   </div>
                 </TableCell>
                 <TableCell>

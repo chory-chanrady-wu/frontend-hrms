@@ -3,6 +3,14 @@
 import { Bell, Calendar, User, CheckCircle, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useGetAllAnnouncements } from "@/hooks/announcement-query";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AnnouncementsPage() {
   const router = useRouter();
@@ -44,35 +52,52 @@ export default function AnnouncementsPage() {
           </p>
         </div>
       )}
-
-      <div className="space-y-4">
-        {announcements.map((announcement: any) => (
-          <div
-            key={announcement.id}
-            className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700"
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={`p-3 rounded-lg ${
-                  announcement.priority === "high"
-                    ? "bg-red-100 dark:bg-red-900/20"
-                    : announcement.priority === "medium"
-                      ? "bg-blue-100 dark:bg-blue-900/20"
-                      : "bg-slate-100 dark:bg-slate-700/30"
-                }`}
-              >
-                <Bell
-                  className={`h-6 w-6 ${
-                    announcement.priority === "high"
-                      ? "text-red-600 dark:text-red-400"
-                      : announcement.priority === "medium"
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-600 dark:text-slate-400"
-                  }`}
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created By</TableHead>
+            <TableHead>Published At</TableHead>
+            <TableHead>Expires At</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {announcements.map((announcement: any) => (
+            <TableRow key={announcement.id}>
+              <TableCell>
+                <div className={`flex items-center gap-3`}>
+                  <span
+                    className={`p-2 rounded-lg ${
+                      announcement.priority === "high"
+                        ? "bg-red-100 dark:bg-red-900/20"
+                        : announcement.priority === "medium"
+                          ? "bg-blue-100 dark:bg-blue-900/20"
+                          : "bg-slate-100 dark:bg-slate-700/30"
+                    }`}
+                  >
+                    <Bell
+                      className={`h-6 w-6 ${
+                        announcement.priority === "high"
+                          ? "text-red-600 dark:text-red-400"
+                          : announcement.priority === "medium"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-slate-600 dark:text-slate-400"
+                      }`}
+                    />
+                  </span>
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                      {announcement.title}
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                      {announcement.content}
+                    </div>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
                   {announcement.status ? (
                     <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
                   ) : (
@@ -84,53 +109,36 @@ export default function AnnouncementsPage() {
                     {announcement.status ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                  {announcement.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  {announcement.content}
-                </p>
-                <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span>{announcement.createdByName || "Unknown"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {announcement.publishedAt
-                        ? new Date(announcement.publishedAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                            },
-                          )
-                        : "Not published"}
-                    </span>
-                  </div>
-                  {announcement.expiresAt && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        Expires:{" "}
-                        {new Date(announcement.expiresAt).toLocaleDateString(
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{announcement.createdByName || "Unknown"}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {announcement.publishedAt
+                      ? new Date(announcement.publishedAt).toLocaleDateString(
                           "en-US",
                           {
                             year: "numeric",
                             month: "2-digit",
                             day: "2-digit",
                           },
-                        )}
-                      </span>
-                    </div>
-                  )}
+                        )
+                      : "Not published"}
+                  </span>
                 </div>
-                <div className="mt-2 text-xs text-slate-400 dark:text-slate-500">
-                  Created:{" "}
-                  {announcement.createdAt &&
-                    new Date(announcement.createdAt).toLocaleString("en-US")}
+                <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  {announcement.createdAt && (
+                    <>
+                      Created:{" "}
+                      {new Date(announcement.createdAt).toLocaleString("en-US")}
+                    </>
+                  )}
                   {announcement.updatedAt && (
                     <span>
                       {" "}
@@ -139,11 +147,30 @@ export default function AnnouncementsPage() {
                     </span>
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              </TableCell>
+              <TableCell>
+                {announcement.expiresAt ? (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>
+                      {new Date(announcement.expiresAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        },
+                      )}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-slate-400">—</span>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

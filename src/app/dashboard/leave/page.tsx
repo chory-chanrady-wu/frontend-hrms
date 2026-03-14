@@ -6,6 +6,14 @@ import {
   useGetAllLeaveRequests,
   useDeleteLeaveRequest,
 } from "@/hooks/leave-query";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { getAccessToken } from "@/lib/auth";
 
@@ -158,57 +166,45 @@ export default function LeavePage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Employee ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Days
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Reason
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Employee ID</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead>Days</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedRequests.length > 0 ? (
                 paginatedRequests.map((request: any) => (
-                  <tr
+                  <TableRow
                     key={request.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <TableCell>
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         #{request.employeeId}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm text-slate-900 dark:text-slate-100">
                         {request.startDate} — {request.endDate}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm text-blue-900 dark:text-blue-200">
                         {calcDays(request.startDate, request.endDate)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm text-slate-600 dark:text-slate-400 max-w-md truncate">
                         {request.reason || "—"}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell>
                       <span
                         className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
                           request.status === "approved" ||
@@ -222,8 +218,8 @@ export default function LeavePage() {
                       >
                         {request.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right">
                       <button
                         onClick={() => {
                           if (
@@ -238,78 +234,21 @@ export default function LeavePage() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={6}
                     className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
                   >
                     No leave requests found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-            {/* Pagination Controls */}
-            {filteredRequests.length > 0 && (
-              <tfoot>
-                <tr>
-                  <td colSpan={6} className="px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Showing {(currentPage - 1) * PAGE_SIZE + 1}–
-                        {Math.min(
-                          currentPage * PAGE_SIZE,
-                          filteredRequests.length,
-                        )}{" "}
-                        of {filteredRequests.length} requests
-                      </p>
-                      {totalPages > 1 && (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() =>
-                              setCurrentPage((p) => Math.max(1, p - 1))
-                            }
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Previous
-                          </button>
-                          {Array.from(
-                            { length: totalPages },
-                            (_, i) => i + 1,
-                          ).map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => setCurrentPage(page)}
-                              className={`px-3 py-1 text-sm rounded-md ${
-                                page === currentPage
-                                  ? "bg-blue-600 text-white"
-                                  : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          ))}
-                          <button
-                            onClick={() =>
-                              setCurrentPage((p) => Math.min(totalPages, p + 1))
-                            }
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Next
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
