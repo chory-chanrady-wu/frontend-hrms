@@ -57,11 +57,11 @@ export default function PerformanceReportsPage() {
         </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
         {/* Field selection UI */}
         {fields.length > 0 && (
           <div className="mb-4">
-            <div className="mb-2 font-semibold text-slate-700">
+            <div className="mb-2 font-semibold text-slate-700 dark:text-slate-200">
               Select fields:
             </div>
             <div className="flex flex-wrap gap-2">
@@ -72,11 +72,15 @@ export default function PerformanceReportsPage() {
                     checked={selectedFields.includes(field)}
                     onChange={() => handleFieldToggle(field)}
                   />
-                  <span className="text-xs text-slate-600">{field}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-300">
+                    {field}
+                  </span>
                 </label>
               ))}
             </div>
-            <div className="mt-4 font-semibold text-slate-700">Filter:</div>
+            <div className="mt-4 font-semibold text-slate-700 dark:text-slate-200">
+              Filter:
+            </div>
             <div className="flex flex-wrap gap-2">
               {fields.map((field) => (
                 <input
@@ -85,7 +89,7 @@ export default function PerformanceReportsPage() {
                   placeholder={`Filter by ${field}`}
                   value={filters[field] || ""}
                   onChange={(e) => handleFilterChange(field, e.target.value)}
-                  className="border border-slate-300 rounded px-2 py-1 text-xs"
+                  className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 rounded px-2 py-1"
                 />
               ))}
             </div>
@@ -102,7 +106,7 @@ export default function PerformanceReportsPage() {
           !error &&
           Array.isArray(filteredData) &&
           filteredData.length === 0 && (
-            <p className="text-slate-600">No performance reports found.</p>
+            <p className="text-slate-600 text-center">Comming Soon</p>
           )}
         {!isLoading &&
           !error &&
@@ -114,7 +118,7 @@ export default function PerformanceReportsPage() {
                   {selectedFields.map((field) => (
                     <th
                       key={field}
-                      className="px-2 py-1 text-left text-slate-700 border-b"
+                      className="px-2 py-1 text-left text-slate-700 dark:text-slate-200 border-b dark:border-slate-700"
                     >
                       {field}
                     </th>
@@ -125,7 +129,10 @@ export default function PerformanceReportsPage() {
                 {filteredData.map((item, idx) => (
                   <tr key={item.id || idx}>
                     {selectedFields.map((field) => (
-                      <td key={field} className="px-2 py-1 border-b">
+                      <td
+                        key={field}
+                        className="px-2 py-1 border-b dark:border-slate-700 dark:text-slate-100"
+                      >
                         {String(item[field] ?? "")}
                       </td>
                     ))}

@@ -249,7 +249,7 @@ export default function PayrollReportsPage() {
                         key={field}
                         className="px-2 py-1 text-left text-black dark:text-white"
                       >
-                        {field}
+                        {field.toUpperCase()}
                       </TableHead>
                     ))}
                   </TableRow>

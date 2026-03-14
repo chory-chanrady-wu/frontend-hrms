@@ -2,62 +2,54 @@
 
 import { Download } from "lucide-react";
 import { useGetAllAttendance } from "@/hooks/attendance-query";
+
 import { useState, useMemo } from "react";
 import * as XLSX from "xlsx";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AttendanceReportsPage() {
-  // Select all fields
-  const handleSelectAllFields = () => {
-    setSelectedFields(fields);
-  };
-  // Unselect all fields
-  const handleUnselectAllFields = () => {
-    setSelectedFields([]);
-  };
-  import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table";
+  // Pagination
+  const PAGE_SIZE = 12;
+  // Data and fields
   const { data, isLoading, error } = useGetAllAttendance();
-
-  // Get all possible fields from the first data item
   const fields = useMemo(() => {
     if (Array.isArray(data) && data.length > 0) {
       return Object.keys(data[0]);
     }
     return [];
   }, [data]);
-
-  // State for selected fields and reinvented filter
+  // State
   const [selectedFields, setSelectedFields] = useState<string[]>(fields);
-  // Reinvented filter: selected field and value
   const [filterField, setFilterField] = useState<string>(fields[0] || "");
   const [filterValue, setFilterValue] = useState<string>("");
-
-  // Update selected fields
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  // Select/unselect all
+  const handleSelectAllFields = () => setSelectedFields(fields);
+  const handleUnselectAllFields = () => setSelectedFields([]);
+  // Field toggle
   const handleFieldToggle = (field: string) => {
     setSelectedFields((prev) =>
       prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field],
     );
   };
-
-  // Update filter field and value
-  const handleFilterFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  // Filter
+  const handleFilterFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setFilterField(e.target.value);
-  };
-  const handleFilterValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterValueChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFilterValue(e.target.value);
-  };
   const handleClearFilter = () => {
     setFilterValue("");
     setFilterField(fields[0] || "");
   };
-
-  // Filtered data (reinvented logic)
+  // Filtered data
   const filteredData = useMemo(() => {
     if (!Array.isArray(data)) return [];
     if (!filterField || !filterValue) return data;
@@ -67,13 +59,49 @@ export default function AttendanceReportsPage() {
         .includes(filterValue.toLowerCase());
     });
   }, [data, filterField, filterValue]);
-
+  // Pagination logic
+  const paginatedData = useMemo(() => {
+    if (!hasGenerated) return [];
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredData.slice(start, start + PAGE_SIZE);
+  }, [filteredData, currentPage, hasGenerated]);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
   // Export to Excel
+  // Format date and time as 'DD, MMMM YYYY : hh:mm'
+  function formatDateTime(dateString: string | undefined) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    const hourStr = hours.toString().padStart(2, "0");
+    return `${day}, ${month} ${year} : ${hourStr}:${minutes} ${ampm}`;
+  }
+
+  // Helper: should a field be formatted as date/time?
+  function isDateTimeField(field: string) {
+    const normalized = field.toLowerCase();
+    return (
+      /date|time/.test(normalized) ||
+      normalized === "checkin" ||
+      normalized === "checkout" ||
+      normalized === "createdat"
+    );
+  }
   const handleExportExcel = () => {
+    if (!filteredData.length) return;
     const exportData = filteredData.map((item) => {
       const row: Record<string, any> = {};
       selectedFields.forEach((field) => {
-        row[field] = item[field];
+        row[field] = isDateTimeField(field)
+          ? formatDateTime(item[field])
+          : item[field];
       });
       return row;
     });
@@ -82,9 +110,9 @@ export default function AttendanceReportsPage() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
     XLSX.writeFile(workbook, "attendance_report.xlsx");
   };
-
-  // Export to Word (simple table)
+  // Export to Word
   const handleExportWord = () => {
+    if (!filteredData.length) return;
     let html = `<table border="1" style="border-collapse:collapse"><tr>`;
     selectedFields.forEach((field) => {
       html += `<th>${field}</th>`;
@@ -93,7 +121,10 @@ export default function AttendanceReportsPage() {
     filteredData.forEach((item) => {
       html += `<tr>`;
       selectedFields.forEach((field) => {
-        html += `<td>${item[field] ?? ""}</td>`;
+        const value = isDateTimeField(field)
+          ? formatDateTime(item[field])
+          : (item[field] ?? "");
+        html += `<td>${value}</td>`;
       });
       html += `</tr>`;
     });
@@ -107,36 +138,43 @@ export default function AttendanceReportsPage() {
     link.download = "attendance_report.doc";
     link.click();
   };
-
+  // Generate button handler
+  const handleGenerate = () => {
+    setHasGenerated(true);
+    setCurrentPage(1);
+  };
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">
           Attendance Reports
         </h1>
-        <div className="flex gap-2">
-          <button
-            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 dark:bg-blue-900/30 dark:text-blue-100 border border-blue-700"
-            onClick={handleExportExcel}
-          >
-            <Download className="h-4 w-4" />
-            Excel
-          </button>
-          <button
-            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 dark:bg-blue-900/30 dark:text-blue-100 border border-blue-700"
-            onClick={handleExportWord}
-          >
-            <Download className="h-4 w-4" />
-            Word
-          </button>
-        </div>
+        {hasGenerated && (
+          <div className="flex gap-2">
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 dark:bg-green-800 dark:text-green-100 border border-green-700 hover:bg-green-700"
+              onClick={handleExportExcel}
+              disabled={!filteredData.length}
+            >
+              <Download className="h-4 w-4" />
+              Excel
+            </button>
+            <button
+              className="bg-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all flex items-center gap-2 dark:bg-blue-900 dark:text-blue-100 border border-blue-700 hover:bg-blue-800"
+              onClick={handleExportWord}
+              disabled={!filteredData.length}
+            >
+              <Download className="h-4 w-4" />
+              Word
+            </button>
+          </div>
+        )}
       </div>
-
       <div className="bg-white border border-slate-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
-        {/* Field selection UI */}
+        {/* Field selection/filter UI */}
         {fields.length > 0 && (
           <div className="mb-4">
-            <div className="mb-2 font-semibold text-slate-700">
+            <div className="mb-2 font-semibold text-slate-700 dark:text-slate-200">
               Select fields:
             </div>
             <div className="flex gap-2 mb-2">
@@ -155,7 +193,7 @@ export default function AttendanceReportsPage() {
                 Unselect All
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-4">
               {fields.map((field) => (
                 <label key={field} className="flex items-center gap-1">
                   <input
@@ -163,14 +201,16 @@ export default function AttendanceReportsPage() {
                     checked={selectedFields.includes(field)}
                     onChange={() => handleFieldToggle(field)}
                   />
-                  <span className="text-xs text-slate-600">{field}</span>
+                  <span className="text-xs text-black dark:text-slate-300">
+                    {field}
+                  </span>
                 </label>
               ))}
             </div>
             <div className="font-semibold text-slate-700 dark:text-slate-200 mb-2">
               Filter:
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-4">
               <select
                 className="border border-slate-300 rounded px-2 py-1 text-xs dark:bg-slate-700 dark:text-slate-100"
                 value={filterField}
@@ -198,79 +238,110 @@ export default function AttendanceReportsPage() {
             </div>
           </div>
         )}
-
-        {isLoading && (
-          <p className="text-slate-600">Loading attendance reports...</p>
-        )}
-        {error && (
-          <p className="text-red-600">Error loading attendance reports.</p>
-        )}
-        {!isLoading &&
-          !error &&
-          Array.isArray(filteredData) &&
-          filteredData.length === 0 && (
-            <p className="text-slate-600">No attendance reports found.</p>
-          )}
-        {!isLoading &&
-          !error &&
-          Array.isArray(filteredData) &&
-          filteredData.length > 0 && (
-            <table className="w-full text-sm">
-              <thead>
-                <tr>
-                  {selectedFields.map((field) => (
-                    <th
-                      key={field}
-                      className="px-2 py-1 text-left text-slate-700 border-b"
-                    >
-                      {field}
-                    </th>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {selectedFields.map((field) => (
-                      <TableHead
-                        key={field}
-                        className="px-2 py-1 text-left text-slate-700 border-b"
-                      >
-                        {field}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredData.map((item, idx) => (
-                    <TableRow key={item.id || idx}>
+        {/* Table and pagination only after generate */}
+        {hasGenerated && (
+          <>
+            {isLoading ? (
+              <div className="text-center py-4 text-slate-500">
+                Loading attendance reports...
+              </div>
+            ) : error ? (
+              <div className="text-center py-4 text-red-500">
+                Error loading attendance reports.
+              </div>
+            ) : filteredData.length === 0 ? (
+              <div className="text-center py-4 text-slate-500">
+                No attendance reports found.
+              </div>
+            ) : (
+              <>
+                <Table className="mb-4">
+                  <TableHeader>
+                    <TableRow>
                       {selectedFields.map((field) => (
-                        <TableCell
+                        <TableHead
                           key={field}
-                          className="px-2 py-1 border-b dark:border-slate-700 dark:text-slate-100"
+                          className="px-2 py-1 text-left text-black dark:text-white"
                         >
-                          {String(item[field] ?? "")}
-                        </TableCell>
+                          {field.toUpperCase()}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((item, idx) => (
-                  <tr key={item.id || idx}>
-                    {selectedFields.map((field) => (
-                      <td
-                        key={field}
-                        className="px-2 py-1 border-b dark:border-slate-700 dark:text-slate-100"
-                      >
-                        {String(item[field] ?? "")}
-                      </td>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((item, idx) => (
+                      <TableRow key={item.id || idx}>
+                        {selectedFields.map((field) => (
+                          <TableCell
+                            key={field}
+                            className="px-2 py-1 dark:border-slate-700 dark:text-slate-100"
+                          >
+                            {isDateTimeField(field)
+                              ? formatDateTime(item[field])
+                              : String(item[field] ?? "")}
+                          </TableCell>
+                        ))}
+                      </TableRow>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                  </TableBody>
+                </Table>
+                {/* Pagination controls */}
+                {filteredData.length > PAGE_SIZE && (
+                  <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+                      {Math.min(currentPage * PAGE_SIZE, filteredData.length)}{" "}
+                      of {filteredData.length} records
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-3 py-1 text-sm rounded-md ${
+                              page === currentPage
+                                ? "bg-blue-600 text-white"
+                                : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ),
+                      )}
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 text-sm rounded-md border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}{" "}
+        {/* Generate button */}
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all mb-4"
+          onClick={handleGenerate}
+          disabled={isLoading || !fields.length}
+        >
+          Generate
+        </button>
       </div>
     </div>
   );
