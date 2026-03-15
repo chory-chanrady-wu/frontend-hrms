@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { Shield, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -86,7 +86,7 @@ export default function RolesPage() {
         </h1>
         <Link
           href="/dashboard/settings/roles/add"
-          className="bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+          className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
         >
           Add Role
         </Link>

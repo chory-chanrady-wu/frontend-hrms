@@ -70,14 +70,16 @@ export default function EmployeeDetailPage() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard/employees"
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            className="shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onClick={() => router.push("/dashboard/employees")}
+            aria-label="Back to Employees"
+            type="button"
           >
-            <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-2xl sm:text-2xl font-extrabold dark:text-white tracking-tight truncate ml-2">
             Employee Details
           </h1>
         </div>

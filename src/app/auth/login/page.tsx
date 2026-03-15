@@ -96,21 +96,21 @@ export default function LoginPage() {
     };
 
     login(credentials, {
-      onSuccess: (data: any) => {
+      onSuccess: (data) => {
         // Store tokens in localStorage
         if (data.accessToken) {
-          localStorage.setItem("accessToken", data.accessToken);
+          localStorage.setItem("accessToken", data.accessToken as string);
           // Store in cookies for middleware
-          document.cookie = `accessToken=${data.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          document.cookie = `accessToken=${data.accessToken as string}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
         }
         if (data.refreshToken) {
-          localStorage.setItem("refreshToken", data.refreshToken);
-          document.cookie = `refreshToken=${data.refreshToken}; path=/; max-age=${30 * 24 * 60 * 60}`; // 30 days
+          localStorage.setItem("refreshToken", data.refreshToken as string);
+          document.cookie = `refreshToken=${data.refreshToken as string}; path=/; max-age=${30 * 24 * 60 * 60}`; // 30 days
         }
         // Backward compatibility
         if (data.token) {
-          localStorage.setItem("token", data.token);
-          document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          localStorage.setItem("token", data.token as string);
+          document.cookie = `token=${data.token as string}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
         }
 
         // Store user identity for profile & other pages
@@ -125,7 +125,7 @@ export default function LoginPage() {
 
         // Fallback: decode JWT to extract userId if not in response body
         const token = data.accessToken || data.token;
-        if (token && !data.userId && !data.employeeId && !data.id) {
+        if (token && !data.user?.id && !data.user?.employeeId) {
           try {
             const payload = JSON.parse(atob(token.split(".")[1]));
             if (payload.userId)
@@ -141,10 +141,12 @@ export default function LoginPage() {
 
         router.push("/dashboard");
       },
-      onError: (error: any) => {
-        setGeneralError(
-          error?.message || "Invalid login credentials. Please try again.",
-        );
+      onError: (error: unknown) => {
+        const errMsg =
+          error instanceof Error && error.message
+            ? error.message
+            : "Invalid login credentials. Please try again.";
+        setGeneralError(errMsg);
       },
     });
   };

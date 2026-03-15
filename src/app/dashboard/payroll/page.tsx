@@ -1,8 +1,8 @@
 "use client";
 
-import { DollarSign, Calendar, FileText } from "lucide-react";
+import { DollarSign, Calendar } from "lucide-react";
 import Link from "next/link";
-import { useGetAllPayroll, useDeletePayroll } from "@/hooks/payroll-query";
+import { useGetAllPayroll } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 import { useState } from "react";
 import {
@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { EmployeeProfile } from "@/lib/types";
 
 export default function PayrollPage() {
   // Year-based pagination
@@ -26,7 +27,17 @@ export default function PayrollPage() {
   const { data: payroll, isLoading, error } = useGetAllPayroll();
   const { data: employeesResponse } = useGetAllEmployees();
 
-  const payrollList = Array.isArray(payroll)
+  type PayrollRecord = {
+    id: number;
+    employeeId: number;
+    month: number;
+    year: number;
+    baseSalary: number;
+    bonus: number;
+    deduction: number;
+    netSalary: number;
+  };
+  const payrollList: PayrollRecord[] = Array.isArray(payroll)
     ? payroll
     : Array.isArray(payroll?.data)
       ? payroll.data
@@ -34,7 +45,7 @@ export default function PayrollPage() {
 
   // Filter payroll for current user
   const filteredPayroll = payrollList.filter(
-    (r: any) => String(r.employeeId) === currentEmployeeId,
+    (r) => String(r.employeeId) === currentEmployeeId,
   );
 
   // Sort by year and month descending
@@ -57,7 +68,7 @@ export default function PayrollPage() {
     ? sortedPayroll.filter((r) => r.year === selectedYear)
     : sortedPayroll;
 
-  const employees = Array.isArray(employeesResponse)
+  const employees: EmployeeProfile[] = Array.isArray(employeesResponse)
     ? employeesResponse
     : Array.isArray(employeesResponse?.data)
       ? employeesResponse.data
@@ -65,16 +76,14 @@ export default function PayrollPage() {
 
   // Show summary for current user only (for selected year)
   const totalNetSalary = yearPayroll.reduce(
-    (sum: number, r: any) => sum + (r.netSalary || 0),
+    (sum: number, r) => sum + (r.netSalary || 0),
     0,
   );
   const avgSalary =
     yearPayroll.length > 0
       ? Math.round(
-          yearPayroll.reduce(
-            (sum: number, r: any) => sum + (r.netSalary || 0),
-            0,
-          ) / yearPayroll.length,
+          yearPayroll.reduce((sum: number, r) => sum + (r.netSalary || 0), 0) /
+            yearPayroll.length,
         )
       : 0;
 
@@ -183,9 +192,9 @@ export default function PayrollPage() {
             </TableHeader>
             <TableBody>
               {yearPayroll.length > 0 ? (
-                yearPayroll.map((record: any) => {
+                yearPayroll.map((record) => {
                   const emp = employees.find(
-                    (e: any) => String(e.id) === String(record.employeeId),
+                    (e) => String(e.id) === String(record.employeeId),
                   );
                   const monthNames = [
                     "January",

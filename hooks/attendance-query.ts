@@ -72,8 +72,21 @@ export const useUpdateAttendance = () => {
         status: string;
       };
     }) => attendanceApi.updateAttendance(id, attData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: ATT_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        attData: {
+          employeeId: number;
+          checkIn: string;
+          checkOut: string;
+          status: string;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: ATT_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: ATT_KEYS.lists() });
     },
   });
@@ -83,7 +96,7 @@ export const useDeleteAttendance = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => attendanceApi.deleteAttendance(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: ATT_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: ATT_KEYS.lists() });
     },

@@ -62,8 +62,11 @@ export const useUpdateAnnouncement = () => {
         expiresAt?: string;
       };
     }) => announcementsApi.updateAnnouncement(id, data),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: { id: number; data: { title: string; content: string; priority: string; publishedAt?: string; expiresAt?: string } }
+    ) => {
+      queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.lists() });
     },
   });
@@ -73,7 +76,7 @@ export const useDeleteAnnouncement = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => announcementsApi.deleteAnnouncement(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: ANNOUNCEMENT_KEYS.lists() });
     },

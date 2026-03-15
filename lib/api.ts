@@ -1,4 +1,4 @@
-import type { ApiResponse } from "./types";
+// import type { ApiResponse } from "./types";
 import { getAccessToken } from "./auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -1007,7 +1007,27 @@ export const announcementsApi = {
 
 // ==================== JOB POSTINGS ====================
 export const jobPostingsApi = {
-  createJobPosting: async (jobData: any) => {
+  createJobPosting: async (jobData: {
+    jobId: string;
+    jobTitle: string;
+    departmentId: number;
+    hiringManagerId: number;
+    jobDescription: string;
+    responsibilities: string;
+    requirements: string;
+    employmentType: string;
+    location: string;
+    remoteOption: boolean;
+    salary: string;
+    vacancies: number;
+    postingDate: string;
+    closingDate: string;
+    jobStatus: string;
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+    [key: string]: unknown;
+  }) => {
     const response = await fetch(`${API_BASE_URL}/job-postings`, {
       method: "POST",
       headers: getAuthHeaders(),
@@ -1027,6 +1047,54 @@ export const jobPostingsApi = {
   getJobPostingById: async (id: string | number) => {
     const response = await fetch(`${API_BASE_URL}/job-postings/${id}`, {
       method: "GET",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  updateJobPosting: async (
+    id: string | number,
+    jobData: {
+      jobId: string;
+      jobTitle: string;
+      departmentId: number;
+      hiringManagerId: number;
+      jobDescription: string;
+      responsibilities: string;
+      requirements: string;
+      employmentType: string;
+      location: string;
+      remoteOption: boolean;
+      salary: string;
+      vacancies: number;
+      postingDate: string;
+      closingDate: string;
+      jobStatus: string;
+      createdBy: string;
+      createdAt: string;
+      updatedAt: string;
+      [key: string]: unknown;
+    },
+  ) => {
+    const response = await fetch(`${API_BASE_URL}/job-postings/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(jobData),
+    });
+    return handleResponse(response);
+  },
+
+  deleteJobPosting: async (id: string | number) => {
+    const response = await fetch(`${API_BASE_URL}/job-postings/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  closeJobPosting: async (id: string | number) => {
+    const response = await fetch(`${API_BASE_URL}/job-postings/${id}/close`, {
+      method: "PATCH",
       headers: getAuthHeaders(),
     });
     return handleResponse(response);

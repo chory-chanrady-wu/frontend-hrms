@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { Briefcase, MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
@@ -64,12 +64,17 @@ export default function RecruitmentPage() {
       if (result.isConfirmed) {
         setLoading(true);
         try {
+          await jobPostingsApi.deleteJobPosting(jobId);
           setJobPostings((prev: any) =>
             prev.filter((job: any) => job.jobId !== jobId),
           );
           Swal.fire("Deleted!", "Job posting deleted.", "success");
-        } catch (error) {
-          Swal.fire("Error", "Failed to delete job posting.", "error");
+        } catch (error: any) {
+          Swal.fire(
+            "Error",
+            error?.message || "Failed to delete job posting.",
+            "error",
+          );
         } finally {
           setLoading(false);
         }
@@ -79,19 +84,36 @@ export default function RecruitmentPage() {
 
   // Handler for closing a job posting
   const handleClose = async (jobId: string) => {
-    setLoading(true);
-    try {
-      setJobPostings((prev: any) =>
-        prev.map((job: any) =>
-          job.jobId === jobId ? { ...job, jobStatus: "Closed" } : job,
-        ),
-      );
-      Swal.fire("Closed!", "Job posting closed.", "success");
-    } catch (error) {
-      Swal.fire("Error", "Failed to close job posting.", "error");
-    } finally {
-      setLoading(false);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to close this job posting?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, close it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setLoading(true);
+        try {
+          await jobPostingsApi.closeJobPosting(jobId);
+          setJobPostings((prev: any) =>
+            prev.map((job: any) =>
+              job.jobId === jobId ? { ...job, jobStatus: "Closed" } : job,
+            ),
+          );
+          Swal.fire("Closed!", "Job posting closed.", "success");
+        } catch (error: any) {
+          Swal.fire(
+            "Error",
+            error?.message || "Failed to close job posting.",
+            "error",
+          );
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   // Fetch job postings from API
@@ -244,13 +266,19 @@ export default function RecruitmentPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/recruitment/${job.jobId}`}>
+                      <DropdownMenuItem asChild disabled={loading}>
+                        <Link
+                          href={`/dashboard/recruitment/${job.jobId}`}
+                          tabIndex={loading ? -1 : 0}
+                        >
                           View
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/recruitment/${job.jobId}/edit`}>
+                      <DropdownMenuItem asChild disabled={loading}>
+                        <Link
+                          href={`/dashboard/recruitment/${job.jobId}/edit`}
+                          tabIndex={loading ? -1 : 0}
+                        >
                           Edit
                         </Link>
                       </DropdownMenuItem>
@@ -258,6 +286,7 @@ export default function RecruitmentPage() {
                       <DropdownMenuItem
                         onClick={() => handleDelete(job.jobId)}
                         variant="destructive"
+                        disabled={loading}
                       >
                         Delete
                       </DropdownMenuItem>

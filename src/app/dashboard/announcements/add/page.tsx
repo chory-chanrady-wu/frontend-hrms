@@ -19,8 +19,6 @@ export default function AddAnnouncementPage() {
     publishedAt: "",
     expiresAt: "",
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const { mutate, isPending } = useCreateAnnouncement();
 
   const handleChange = (
@@ -37,7 +35,7 @@ export default function AddAnnouncementPage() {
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Only compare date part
     if (form.publishedAt) {
-      let publishDate = new Date(form.publishedAt);
+      const publishDate = new Date(form.publishedAt);
       if (isNaN(publishDate.getTime())) {
         themedSwal({
           title: "Validation Error",
@@ -57,7 +55,7 @@ export default function AddAnnouncementPage() {
     }
     if (form.expiresAt) {
       // For datetime-local, treat empty time as 00:00
-      let expireDate = new Date(form.expiresAt);
+      const expireDate = new Date(form.expiresAt);
       if (isNaN(expireDate.getTime())) {
         themedSwal({
           title: "Validation Error",
@@ -109,10 +107,13 @@ export default function AddAnnouncementPage() {
           });
           setTimeout(() => router.push("/dashboard/announcements"), 1200);
         },
-        onError: (err: any) => {
+        onError: (err: unknown) => {
           themedSwal({
             title: "Error",
-            text: err?.message || "Failed to create announcement.",
+            text:
+              err instanceof Error
+                ? err.message
+                : "Failed to create announcement.",
             icon: "error",
           });
         },

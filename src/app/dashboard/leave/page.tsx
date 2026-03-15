@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { Calendar, Clock, FileText, Trash2 } from "lucide-react";
 import Link from "next/link";

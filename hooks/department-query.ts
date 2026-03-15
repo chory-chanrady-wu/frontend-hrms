@@ -70,8 +70,20 @@ export const useUpdateDepartment = () => {
         headOfDepartmentId?: number | null;
       };
     }) => departmentsApi.updateDepartment(id, deptData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: DEPT_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        deptData: {
+          name: string;
+          description: string;
+          headOfDepartmentId?: number | null;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: DEPT_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: DEPT_KEYS.lists() });
     },
   });
@@ -81,7 +93,7 @@ export const useDeleteDepartment = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => departmentsApi.deleteDepartment(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: DEPT_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: DEPT_KEYS.lists() });
     },

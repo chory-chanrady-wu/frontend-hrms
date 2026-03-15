@@ -17,10 +17,6 @@ export default function PayrollDetailPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Get current username from localStorage
-  const username =
-    typeof window !== "undefined" ? localStorage.getItem("username") : "";
-
   // Password validation handler
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { useState } from "react";
 import { Building2, Users, Edit, Trash2, Search } from "lucide-react";
@@ -23,7 +23,7 @@ export default function DepartmentsPage() {
   const { data: empResponse } = useGetAllEmployees();
   const { mutate: deleteDepartment } = useDeleteDepartment();
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 6;
 

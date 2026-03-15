@@ -1,3 +1,17 @@
+/** Announcement object from API */
+export type Announcement = {
+  id: number;
+  title: string;
+  content: string;
+  priority: "high" | "medium" | "low";
+  status: boolean;
+  publishedAt?: string;
+  expiresAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdById?: number;
+  createdByName?: string;
+};
 /**
  * Centralized type definitions for the HR Management System
  */

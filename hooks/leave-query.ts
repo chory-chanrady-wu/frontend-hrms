@@ -80,8 +80,14 @@ export const useUpdateLeaveType = () => {
       id: number;
       ltData: { name: string; description: string; daysAllowed: number };
     }) => leaveTypesApi.updateLeaveType(id, ltData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: LT_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        ltData: { name: string; description: string; daysAllowed: number };
+      },
+    ) => {
+      queryClient.invalidateQueries({ queryKey: LT_KEYS.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: LT_KEYS.lists() });
     },
   });
@@ -91,7 +97,7 @@ export const useDeleteLeaveType = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => leaveTypesApi.deleteLeaveType(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: LT_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: LT_KEYS.lists() });
     },
@@ -169,8 +175,21 @@ export const useUpdateLeaveRequest = () => {
         status: string;
       };
     }) => leaveRequestsApi.updateLeaveRequest(id, lrData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: LR_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        lrData: {
+          employeeId: number;
+          leaveTypeId: number;
+          startDate: string;
+          endDate: string;
+          reason: string;
+          status: string;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({ queryKey: LR_KEYS.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: LR_KEYS.lists() });
     },
   });
@@ -180,7 +199,7 @@ export const useDeleteLeaveRequest = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => leaveRequestsApi.deleteLeaveRequest(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: LR_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: LR_KEYS.lists() });
     },

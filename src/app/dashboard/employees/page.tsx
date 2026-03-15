@@ -107,7 +107,7 @@ export default function EmployeesPage() {
         </h1>
         <Link
           href="/dashboard/employees/add"
-          className="bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+          className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
         >
           Add Employee
         </Link>

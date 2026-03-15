@@ -178,7 +178,6 @@ export default function AttendancePage() {
             checkOut: string;
             status: string;
           },
-          idx: number,
         ) => {
           createAttendance(payload, {
             onSuccess: () => {
@@ -295,7 +294,7 @@ export default function AttendancePage() {
         <div className="flex gap-3">
           <button
             onClick={openCreate}
-            className="bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
           >
             Mark Attendance
           </button>
@@ -663,7 +662,7 @@ export default function AttendancePage() {
                 <button
                   type="submit"
                   disabled={isCreating || isUpdating}
-                  className="flex-1 bg-gradient-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {(isCreating || isUpdating) && (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -49,6 +49,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGetAllAnnouncements } from "@/hooks/announcement-query";
 import { announcementsApi } from "@/lib/api";
+import type { Announcement } from "@/lib/types";
 import { useState } from "react";
 import {
   Table,
@@ -76,13 +77,29 @@ export default function AnnouncementsPage() {
     error,
     refetch,
   } = useGetAllAnnouncements();
-  const announcementsRaw = Array.isArray(response)
+  const announcementsRaw: unknown = Array.isArray(response)
     ? response
     : Array.isArray(response?.data)
       ? response.data
       : [];
-  // Show all announcements (active and inactive)
-  const announcements = announcementsRaw;
+  // Type guard to ensure array of Announcement
+  function isAnnouncementArray(arr: unknown): arr is Announcement[] {
+    return (
+      Array.isArray(arr) &&
+      arr.every(
+        (a) =>
+          typeof a === "object" &&
+          a !== null &&
+          "id" in a &&
+          typeof (a as any).id === "number" &&
+          "title" in a &&
+          typeof (a as any).title === "string",
+      )
+    );
+  }
+  const announcements: Announcement[] = isAnnouncementArray(announcementsRaw)
+    ? announcementsRaw
+    : [];
   // Debug log to verify API response shape and values
   // console.log("Announcements API response:", response);
   // console.log("Announcements array:", announcements);
@@ -164,7 +181,7 @@ export default function AnnouncementsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {announcements.map((announcement: any) => (
+          {announcements.map((announcement) => (
             <TableRow
               key={announcement.id}
               onClick={(e) => {
@@ -236,14 +253,14 @@ export default function AnnouncementsPage() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span>{announcement.createdByName || "Unknown"}</span>
+                  <span>{announcement.createdByName ?? "Unknown"}</span>
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {announcement.publishedAt
+                    {typeof announcement.publishedAt === "string"
                       ? new Date(announcement.publishedAt).toLocaleDateString(
                           "en-US",
                           {
@@ -256,13 +273,13 @@ export default function AnnouncementsPage() {
                   </span>
                 </div>
                 <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  {announcement.createdAt && (
+                  {typeof announcement.createdAt === "string" && (
                     <>
                       Created:{" "}
                       {new Date(announcement.createdAt).toLocaleString("en-US")}
                     </>
                   )}
-                  {announcement.updatedAt && (
+                  {typeof announcement.updatedAt === "string" && (
                     <span>
                       {" "}
                       | Updated:{" "}
@@ -272,7 +289,7 @@ export default function AnnouncementsPage() {
                 </div>
               </TableCell>
               <TableCell>
-                {announcement.expiresAt ? (
+                {typeof announcement.expiresAt === "string" ? (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>

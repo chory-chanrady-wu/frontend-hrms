@@ -1,9 +1,9 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import {
   useCreateLeaveRequest,

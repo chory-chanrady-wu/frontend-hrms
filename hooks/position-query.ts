@@ -66,8 +66,21 @@ export const useUpdatePosition = () => {
         salary: number;
       };
     }) => positionsApi.updatePosition(id, posData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: POS_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        posData: {
+          positionName: string;
+          description: string;
+          department: number;
+          salary: number;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: POS_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: POS_KEYS.lists() });
     },
   });
@@ -77,7 +90,7 @@ export const useDeletePosition = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => positionsApi.deletePosition(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: POS_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: POS_KEYS.lists() });
     },

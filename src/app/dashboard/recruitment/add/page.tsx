@@ -231,10 +231,34 @@ export default function AddJobPostingPage() {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
     setLoading(true);
-    const payload = { ...form };
-    payload.vacancies = Number(form.vacancies);
-    if (payload.createdAt === "") payload.createdAt = null;
-    if (payload.updatedAt === "") payload.updatedAt = null;
+    // Map form fields to required API fields and types
+    // Generate a random UUID for jobId (for demo, not cryptographically secure)
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    const payload = {
+      jobId: uuidv4(),
+      jobTitle: form.jobTitle,
+      departmentId: Number(form.departmentId),
+      hiringManagerId: Number(form.hiringManagerId),
+      jobDescription: form.jobDescription,
+      responsibilities: form.responsibilities,
+      requirements: form.requirements,
+      employmentType: form.employmentType,
+      location: form.location,
+      remoteOption: !!form.remoteOption,
+      salary: String(form.salary),
+      vacancies: Number(form.vacancies),
+      postingDate: form.postingDate,
+      closingDate: form.closingDate,
+      jobStatus: form.jobStatus,
+      createdBy: form.createdBy,
+      createdAt: form.createdAt && form.createdAt !== "" ? form.createdAt : new Date().toISOString(),
+      updatedAt: form.updatedAt && form.updatedAt !== "" ? form.updatedAt : new Date().toISOString(),
+    };
     try {
       await jobPostingsApi.createJobPosting(payload);
       alert("Job posting created successfully!");
@@ -247,7 +271,7 @@ export default function AddJobPostingPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto mt-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-8">
+    <div className="max-w-7xl mx-auto mt-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-8">
       <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-slate-100 text-center">
         Create Job Posting
       </h2>

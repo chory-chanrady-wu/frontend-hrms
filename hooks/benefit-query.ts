@@ -80,8 +80,16 @@ export const useUpdateBenefit = () => {
       id: number;
       benData: { name: string; description: string; amount: number };
     }) => benefitsApi.updateBenefit(id, benData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: BEN_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        benData: { name: string; description: string; amount: number };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: BEN_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: BEN_KEYS.lists() });
     },
   });
@@ -91,7 +99,7 @@ export const useDeleteBenefit = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => benefitsApi.deleteBenefit(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: BEN_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: BEN_KEYS.lists() });
     },
@@ -155,8 +163,16 @@ export const useUpdateEmployeeBenefit = () => {
         amount: number;
       };
     }) => employeeBenefitsApi.updateEmployeeBenefit(id, ebData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: EMP_BEN_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        ebData: { employeeId: number; benefitId: number; amount: number };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: EMP_BEN_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: EMP_BEN_KEYS.lists() });
     },
   });
@@ -166,7 +182,7 @@ export const useDeleteEmployeeBenefit = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => employeeBenefitsApi.deleteEmployeeBenefit(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: EMP_BEN_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: EMP_BEN_KEYS.lists() });
     },

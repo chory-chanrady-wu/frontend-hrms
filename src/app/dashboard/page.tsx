@@ -8,7 +8,6 @@ import {
   Calendar,
   Loader2,
   LogIn,
-  LogOut,
   TrendingUp,
   AlertCircle,
 } from "lucide-react";
@@ -63,26 +62,48 @@ export default function DashboardPage() {
       : [];
 
   // Build employee ID → name map
+  type Employee = {
+    id: number;
+    fullName?: string;
+    username?: string;
+  };
   const employeeMap: Record<number, string> = {};
-  employees.forEach((emp: any) => {
+  employees.forEach((emp: Employee) => {
     employeeMap[emp.id] = emp.fullName || emp.username || `Employee #${emp.id}`;
   });
 
   const totalEmployees = employees.length;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const presentToday = attendanceList.filter((a: any) => {
+  type Attendance = {
+    id: number;
+    employeeId: number;
+    employeeName?: string;
+    checkIn: string;
+    status: string;
+  };
+  const presentToday = attendanceList.filter((a: Attendance) => {
     if (!(a.status === "present" || a.status === "Present")) return false;
     if (!a.checkIn) return false;
     const checkInDate = new Date(a.checkIn);
     checkInDate.setHours(0, 0, 0, 0);
     return checkInDate.getTime() === today.getTime();
   }).length;
+  type LeaveRequest = {
+    id: number;
+    employeeId: number;
+    employeeName?: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    createdAt?: string;
+    reason?: string;
+  };
   const pendingRequests = leaveRequests.filter(
-    (l: any) => l.status === "pending" || l.status === "Pending",
+    (l: LeaveRequest) => l.status === "pending" || l.status === "Pending",
   ).length;
   // Calculate employees on leave today
-  const onLeaveToday = leaveRequests.filter((l: any) => {
+  const onLeaveToday = leaveRequests.filter((l: LeaveRequest) => {
     if (!(l.status === "approved" || l.status === "Approved")) return false;
     const start = l.startDate ? new Date(l.startDate) : null;
     const end = l.endDate ? new Date(l.endDate) : null;
@@ -97,7 +118,7 @@ export default function DashboardPage() {
   // Recent attendance (latest 5)
   const recentAttendance = [...attendanceList]
     .sort(
-      (a: any, b: any) =>
+      (a: Attendance, b: Attendance) =>
         new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime(),
     )
     .slice(0, 5);
@@ -105,7 +126,7 @@ export default function DashboardPage() {
   // Recent leave requests (latest 5)
   const recentLeaves = [...leaveRequests]
     .sort(
-      (a: any, b: any) =>
+      (a: LeaveRequest, b: LeaveRequest) =>
         new Date(b.createdAt || b.startDate).getTime() -
         new Date(a.createdAt || a.startDate).getTime(),
     )
@@ -230,43 +251,45 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentAttendance.map((att: any, index: number) => (
-                        <tr
-                          key={att.id || index}
-                          className="border-b last:border-b-0 border-slate-200 dark:border-slate-700"
-                        >
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                                  {(att.employeeName || "?")
-                                    .charAt(0)
-                                    .toUpperCase()}
+                      {recentAttendance.map(
+                        (att: Attendance, index: number) => (
+                          <tr
+                            key={att.id || index}
+                            className="border-b last:border-b-0 border-slate-200 dark:border-slate-700"
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                                    {(att.employeeName || "?")
+                                      .charAt(0)
+                                      .toUpperCase()}
+                                  </span>
+                                </div>
+                                <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate max-w-30">
+                                  {att.employeeName || `#${att.employeeId}`}
                                 </span>
                               </div>
-                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate max-w-30">
-                                {att.employeeName || `#${att.employeeId}`}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                              {formatDate(att.checkIn)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                              <span className="flex items-center gap-1">
+                                <LogIn className="h-3 w-3 text-green-500" />
+                                {formatTime(att.checkIn)}
                               </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
-                            {formatDate(att.checkIn)}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
-                            <span className="flex items-center gap-1">
-                              <LogIn className="h-3 w-3 text-green-500" />
-                              {formatTime(att.checkIn)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadge(att.status)}`}
-                            >
-                              {att.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadge(att.status)}`}
+                              >
+                                {att.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ),
+                      )}
                     </tbody>
                   </table>
                 ) : (
@@ -286,7 +309,7 @@ export default function DashboardPage() {
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
                 {recentLeaves.length > 0 ? (
                   <div className="space-y-0">
-                    {recentLeaves.map((leave: any, index: number) => (
+                    {recentLeaves.map((leave: LeaveRequest, index: number) => (
                       <div
                         key={leave.id || index}
                         className={`flex items-center justify-between px-4 py-4 ${index > 0 ? "border-t border-slate-200 dark:border-slate-700" : ""}`}

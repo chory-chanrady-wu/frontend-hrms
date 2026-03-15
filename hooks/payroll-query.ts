@@ -72,8 +72,22 @@ export const useUpdatePayroll = () => {
         netSalary: number;
       };
     }) => payrollApi.updatePayroll(id, prData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: PR_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        prData: {
+          employeeId: number;
+          month: number;
+          year: number;
+          baseSalary: number;
+          bonus: number;
+          deduction: number;
+          netSalary: number;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({ queryKey: PR_KEYS.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: PR_KEYS.lists() });
     },
   });
@@ -83,7 +97,7 @@ export const useDeletePayroll = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => payrollApi.deletePayroll(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: PR_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: PR_KEYS.lists() });
     },

@@ -82,7 +82,7 @@ export default function PayrollReportsPage() {
     setCurrentPage(1); // Reset to first page on generate
     try {
       const res = await payrollApi.getAllPayroll();
-      let data = Array.isArray(res)
+      const data = Array.isArray(res)
         ? res
         : Array.isArray(res?.data)
           ? res.data
@@ -144,7 +144,7 @@ export default function PayrollReportsPage() {
     payrollData.forEach((item) => {
       html += `<tr>`;
       selectedFields.forEach((field) => {
-        let value = ["baseSalary", "bonus", "deduction", "netSalary"].includes(
+        const value = ["baseSalary", "bonus", "deduction", "netSalary"].includes(
           field,
         )
           ? formatMoney(item[field])

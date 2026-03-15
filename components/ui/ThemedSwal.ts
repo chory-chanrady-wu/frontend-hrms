@@ -1,9 +1,9 @@
 // components/ui/ThemedSwal.ts
 import Swal, { SweetAlertOptions, SweetAlertResult } from "sweetalert2";
 
-export function themedSwal(
+export function themedSwal<T = unknown>(
   options: SweetAlertOptions,
-): Promise<SweetAlertResult<any>> {
+): Promise<SweetAlertResult<Awaited<T>>> {
   const isDark =
     typeof document !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -18,5 +18,5 @@ export function themedSwal(
       ...(options.customClass || {}),
     },
     background: isDark ? "#1e293b" : "#fff",
-  });
+  }) as Promise<SweetAlertResult<Awaited<T>>>;
 }

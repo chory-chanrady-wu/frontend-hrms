@@ -18,11 +18,8 @@ import {
   UserCheck,
   CalendarClock,
   BarChart3,
-  ClipboardList,
   Settings,
   Shield,
-  GraduationCap,
-  BookOpen,
   ChevronDown,
 } from "lucide-react";
 import {

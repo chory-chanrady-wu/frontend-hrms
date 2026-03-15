@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteAnnouncement } from "@/hooks/announcement-query";
 import { announcementsApi } from "@/lib/api";
+import type { Announcement } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 function formatDateTime(dateString: string | undefined) {
   if (!dateString) return "";
@@ -31,14 +32,14 @@ export default function AnnouncementDetailPage() {
   const id = params?.id;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [announcement, setAnnouncement] = useState<any>(null);
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const deleteAnnouncement = useDeleteAnnouncement();
 
   async function fetchData() {
     setLoading(true);
     try {
       const data = await announcementsApi.getAnnouncementById(Number(id));
-      setAnnouncement(data);
+      setAnnouncement(data as Announcement);
     } catch (e) {
       setError("Failed to load announcement.");
     } finally {

@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";

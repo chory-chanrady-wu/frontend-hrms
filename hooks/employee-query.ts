@@ -87,8 +87,29 @@ export const useUpdateEmployee = () => {
         address?: string;
       };
     }) => employeesApi.updateEmployee(id, empData),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: EMP_KEYS.detail(id) });
+    onSuccess: (
+      _data: unknown,
+      variables: {
+        id: number;
+        empData: {
+          fullName: string;
+          email: string;
+          phoneNumber?: string;
+          departmentId: number;
+          positionId: number;
+          employmentType: string;
+          salary: number;
+          hireDate: string;
+          status: boolean;
+          dateOfBirth?: string;
+          nationality?: string;
+          address?: string;
+        };
+      },
+    ) => {
+      queryClient.invalidateQueries({
+        queryKey: EMP_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: EMP_KEYS.lists() });
     },
   });
@@ -98,7 +119,7 @@ export const useDeleteEmployee = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => employeesApi.deleteEmployee(id),
-    onSuccess: (_data: any, id: any) => {
+    onSuccess: (_data: unknown, id: number) => {
       queryClient.invalidateQueries({ queryKey: EMP_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: EMP_KEYS.lists() });
     },
@@ -110,8 +131,10 @@ export const useUploadEmployeeImage = () => {
   return useMutation({
     mutationFn: ({ id, file }: { id: number; file: File }) =>
       employeesApi.uploadEmployeeImage(id, file),
-    onSuccess: (_data: any, { id }: any) => {
-      queryClient.invalidateQueries({ queryKey: EMP_KEYS.detail(id) });
+    onSuccess: (_data: unknown, variables: { id: number; file: File }) => {
+      queryClient.invalidateQueries({
+        queryKey: EMP_KEYS.detail(variables.id),
+      });
     },
   });
 };

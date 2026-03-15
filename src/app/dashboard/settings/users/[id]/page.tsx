@@ -1,5 +1,5 @@
+"use client";
 import Swal from "sweetalert2";
-("use client");
 
 import { useParams, useRouter } from "next/navigation";
 import { useGetUserById, useDeleteUser } from "@/hooks/user-query";

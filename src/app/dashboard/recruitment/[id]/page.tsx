@@ -1,15 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { jobPostingsApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Briefcase } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import Swal from "sweetalert2";
+
+type JobDetail = {
+  jobId: number | string;
+  jobTitle: string;
+  departmentName?: string;
+  departmentId?: string | number;
+  hiringManagerName?: string;
+  hiringManagerId?: string | number;
+  location?: string;
+  employmentType?: string;
+  vacancies?: number;
+  jobStatus?: string;
+  postingDate?: string;
+  closingDate?: string;
+  jobDescription?: string;
+  requirements?: string;
+  responsibilities?: string;
+};
 
 export default function RecruitmentJobDetailPage() {
   const { id } = useParams();
-  const [job, setJob] = useState<any>(null);
+  const router = useRouter();
+  const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -58,151 +79,188 @@ export default function RecruitmentJobDetailPage() {
     );
   }
 
+  // Delete handler with SweetAlert
+  const handleDelete = async () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This will permanently delete the job posting.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await jobPostingsApi.deleteJobPosting(job.jobId);
+          Swal.fire("Deleted!", "Job posting deleted.", "success");
+          router.push("/dashboard/recruitment");
+        } catch (error) {
+          Swal.fire("Error", "Failed to delete job posting.", "error");
+        }
+      }
+    });
+  };
+
   return (
     <>
-      <div className="max-w-full mx-auto mt-5 bg-linear-to-br from-blue-100 via-blue-50 to-blue-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-12 relative animate-fade-in overflow-visible h-auto">
-        <Link
-          href="/dashboard/recruitment"
-          className="absolute top-8 right-10 text-blue-600 hover:text-blue-800 dark:hover:text-blue-300 font-semibold text-sm transition"
-        >
-          Back to list
-        </Link>
-        <div className="flex flex-col items-center mb-10">
-          <div className="bg-blue-100 dark:bg-slate-700 rounded-full p-4 mb-4 shadow-md animate-bounce relative">
-            <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-300 drop-shadow-lg" />
-            {job.jobStatus === "Open" && (
-              <span className="absolute -top-3 -right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse flex items-center gap-1">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="12" fill="#22c55e" />
-                  <path
-                    d="M7 13l3 3 7-7"
-                    stroke="#fff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Open
-              </span>
-            )}
-          </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2 text-center tracking-tight animate-pulse">
-            {job.jobTitle}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            className="shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onClick={() => router.push("/dashboard/recruitment")}
+            aria-label="Back to Recruitment"
+            type="button"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-2xl sm:text-2xl font-extrabold dark:text-white tracking-tight truncate ml-2">
+            Job Details
           </h1>
-          {job.jobStatus === "Open" && (
-            <div className="confetti absolute top-0 left-1/2 transform -translate-x-1/2 mt-2">
-              <span className="text-yellow-400 text-2xl">🎉</span>
-              <span className="text-pink-400 text-2xl">✨</span>
-              <span className="text-blue-400 text-2xl">🎊</span>
-            </div>
-          )}
         </div>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-8 mb-10">
-          <div>
-            <span className="text-xs text-slate-500">Department</span>
-            <div className="text-lg font-bold text-slate-900 dark:text-white mt-1">
-              {job.departmentName || job.departmentId}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Hiring Manager</span>
-            <div className="text-lg font-bold text-slate-900 dark:text-white mt-1">
-              {job.hiringManagerName || job.hiringManagerId}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Location</span>
-            <div className="text-base text-slate-700 dark:text-slate-300 mt-1">
-              {job.location}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Type</span>
-            <div className="text-base text-slate-700 dark:text-slate-300 mt-1">
-              {job.employmentType}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Vacancies</span>
-            <div className="text-lg font-bold text-slate-900 dark:text-white mt-1">
-              {job.vacancies}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Status</span>
-            <span
-              className={`inline-flex px-4 py-1 text-sm font-bold rounded-full shadow-md mt-1 transition-all duration-300 ${job.jobStatus === "Closed" ? "bg-red-600 text-white animate-glow" : "bg-green-600 text-white animate-glow"}`}
-              style={{
-                boxShadow:
-                  job.jobStatus === "Closed"
-                    ? "0 0 8px 2px #f87171"
-                    : "0 0 8px 2px #22c55e",
-                position: "relative",
-                zIndex: 2,
-              }}
-            >
-              {job.jobStatus === "Closed" ? "❌ " : "✅ "}
-              {job.jobStatus}
-            </span>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Posting Date</span>
-            <div className="text-base text-slate-700 dark:text-slate-300 mt-1">
-              {job.postingDate
-                ? new Date(job.postingDate).toLocaleDateString()
-                : "-"}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-slate-500">Closing Date</span>
-            <div className="text-base text-slate-700 dark:text-slate-300 mt-1">
-              {job.closingDate
-                ? new Date(job.closingDate).toLocaleDateString()
-                : "-"}
-            </div>
-          </div>
-        </div>
-        <div className="mb-10">
-          <span className="text-xs text-slate-500">Description</span>
-          <div className="text-base text-slate-700 dark:text-slate-200 mt-2">
-            {job.description ? (
-              <span>{job.description}</span>
-            ) : (
-              <span className="italic text-slate-400">
-                No description provided.
-              </span>
-            )}
-          </div>
-        </div>
-        <hr className="my-8 border-blue-200 dark:border-slate-700" />
-        <div className="flex gap-6 justify-center mt-6">
+
+        <div className="flex gap-2">
           <Button
             asChild
-            variant="outline"
-            className="px-8 py-2 text-base font-bold shadow-sm hover:bg-blue-300 hover:text-blue-900 dark:hover:bg-slate-700 dark:hover:text-blue-200 transition duration-300 border-2 border-blue-400"
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Link href={`/dashboard/recruitment/${job.jobId}/edit`}>
-              <span role="img" aria-label="edit">
-                ✏️
-              </span>{" "}
-              Edit
+              <Edit className="w-4 h-4 mr-1" /> Edit
             </Link>
           </Button>
           <Button
-            asChild
+            onClick={handleDelete}
             variant="destructive"
-            className="px-8 py-2 text-base font-bold shadow-sm hover:bg-red-400 hover:text-white transition duration-300 border-2 border-red-400"
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
-            <Link href="/dashboard/recruitment">
-              <span role="img" aria-label="delete">
-                🗑️
-              </span>{" "}
-              Delete
-            </Link>
+            <Trash2 className="w-4 h-4 mr-1" /> Delete
           </Button>
         </div>
       </div>
-      {/* Removed creative-bg custom background style */}
+      <div className="max-w-full mx-auto mt-10">
+        <div className="mb-4">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            {job.jobTitle}
+          </h1>
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Department
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.departmentName || job.departmentId}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Hiring Manager
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.hiringManagerName || job.hiringManagerId}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Location
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.location}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Type
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.employmentType}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Vacancies
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.vacancies}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Status
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.jobStatus}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Posting Date
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.postingDate
+                  ? new Date(job.postingDate).toLocaleDateString()
+                  : "-"}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Closing Date
+              </span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.closingDate
+                  ? new Date(job.closingDate).toLocaleDateString()
+                  : "-"}
+              </div>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Description
+            </span>
+            <div className="text-base text-slate-700 dark:text-slate-200 mt-2">
+              {job.jobDescription ? (
+                <span>{job.jobDescription}</span>
+              ) : (
+                <span className="italic text-slate-400 dark:text-slate-500">
+                  No description provided.
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="mt-6">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Responsibilities
+            </span>
+            <div className="text-base text-slate-700 dark:text-slate-200 mt-2">
+              {job.responsibilities ? (
+                <span>{job.responsibilities}</span>
+              ) : (
+                <span className="italic text-slate-400 dark:text-slate-500">
+                  No responsibilities provided.
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="mt-6">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Requirements
+            </span>
+            <div className="text-base text-slate-700 dark:text-slate-200 mt-2">
+              {job.requirements ? (
+                <span>{job.requirements}</span>
+              ) : (
+                <span className="italic text-slate-400 dark:text-slate-500">
+                  No requirements provided.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

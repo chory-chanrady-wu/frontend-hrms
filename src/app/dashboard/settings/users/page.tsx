@@ -1,16 +1,13 @@
-import Swal from "sweetalert2";
-("use client");
+"use client";
 
+import Swal from "sweetalert2";
 import { useState } from "react";
 import {
-  User,
   Mail,
   Shield,
   Edit,
   Trash2,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
