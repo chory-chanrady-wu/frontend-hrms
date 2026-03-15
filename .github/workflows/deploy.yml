@@ -1,64 +1,29 @@
-name: HRMS Frontend CI/CD
+name: Deploy to Vercel
+
 on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: code format fixting
-        run: pnpm run format:fix
-
-      - name: Check code formatting
-        run: pnpm run format:check
-
-      - name: Run build
-        run: pnpm run build
-
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Install pnpm
-        run: npm install -g pnpm
 
-      - name: Checkout code
+    steps:
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+      - name: install pnpm
+        run: npm install -g pnpm
 
-            cd /var/www/html/index
+      - name: Install Vercel CLI
+        run: npm install -g vercel
 
-            git pull origin master
-            pnpm install
-            pnpm run build
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-            pm2 restart next-app || pm2 start pnpm --name "next-app" -- start
+      - name: Build project
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

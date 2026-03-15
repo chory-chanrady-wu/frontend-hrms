@@ -6,6 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const getAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   };
   const token = getAccessToken();
   if (token) {
@@ -330,7 +331,12 @@ export const employeesApi = {
     const token = getAccessToken();
     const response = await fetch(`${API_BASE_URL}/employees`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          }
+        : { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     return handleResponse(response);
@@ -405,7 +411,12 @@ export const employeesApi = {
       `${API_BASE_URL}/employees/${id}/upload-image`,
       {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+              "ngrok-skip-browser-warning": "true",
+            }
+          : { "ngrok-skip-browser-warning": "true" },
         body: formData,
       },
     );
@@ -1018,7 +1029,12 @@ export const cloudinaryApi = {
     const token = getAccessToken();
     const response = await fetch(`${API_BASE_URL}/cloud/upload`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          }
+        : { "ngrok-skip-browser-warning": "true" },
       body: formData,
     });
     return handleResponse(response);
