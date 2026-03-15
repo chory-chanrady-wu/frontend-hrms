@@ -17,14 +17,26 @@ const getAuthHeaders = (): Record<string, string> => {
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: response.statusText }));
+    // Try to parse error message if possible
+    let error;
+    try {
+      error = await response.json();
+    } catch {
+      error = { message: response.statusText };
+    }
     throw new Error(
       error.message || `Request failed with status ${response.status}`,
     );
   }
-  return response.json();
+  // Handle 204 No Content or empty body
+  if (response.status === 204) {
+    return null;
+  }
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+  return JSON.parse(text);
 };
 
 // ==================== AUTH ====================

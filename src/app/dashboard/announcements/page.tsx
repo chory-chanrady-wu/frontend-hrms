@@ -1,5 +1,39 @@
+// Add this to your global CSS (e.g., styles/globals.css) for SweetAlert2 theme support
+/*
+.swal2-popup-theme {
+  background-color: #fff;
+  color: #1e293b;
+}
+.dark .swal2-popup-theme {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+.swal2-title-theme {
+  color: inherit;
+}
+.swal2-html-theme {
+  color: inherit;
+}
+.swal2-confirm-theme {
+  background-color: #dc2626 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.swal2-cancel-theme {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border: none !important;
+}
+.dark .swal2-confirm-theme {
+  background-color: #ef4444 !important;
+}
+.dark .swal2-cancel-theme {
+  background-color: #3b82f6 !important;
+}
+*/
 "use client";
 
+import { themedSwal } from "@/components/ui/ThemedSwal";
 import {
   Bell,
   Calendar,
@@ -11,6 +45,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGetAllAnnouncements } from "@/hooks/announcement-query";
 import { announcementsApi } from "@/lib/api";
@@ -52,22 +87,48 @@ export default function AnnouncementsPage() {
   // console.log("Announcements API response:", response);
   // console.log("Announcements array:", announcements);
 
-  async function handleDelete(id: number) {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this announcement? This action cannot be undone.",
-      )
-    )
-      return;
-    setDeletingId(id);
-    try {
-      await announcementsApi.deleteAnnouncement(id);
-      await refetch();
-    } catch (e) {
-      alert("Failed to delete announcement.");
-    } finally {
-      setDeletingId(null);
+  // Show SweetAlert2 error if announcements fail to load
+  useEffect(() => {
+    if (error) {
+      themedSwal({
+        title: "Error",
+        text: "Error loading announcements. Please try again.",
+        icon: "error",
+      });
     }
+  }, [error]);
+
+  async function handleDelete(id: number) {
+    themedSwal({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this announcement? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setDeletingId(id);
+        try {
+          await announcementsApi.deleteAnnouncement(id);
+          await refetch();
+          themedSwal({
+            title: "Deleted!",
+            text: "Announcement has been deleted.",
+            icon: "success",
+          });
+        } catch (e) {
+          themedSwal({
+            title: "Error",
+            text: "Failed to delete announcement.",
+            icon: "error",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      }
+    });
   }
 
   return (
@@ -89,13 +150,7 @@ export default function AnnouncementsPage() {
           </p>
         </div>
       )}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 dark:bg-red-900/20 dark:border-red-800">
-          <p className="text-red-600 dark:text-red-400">
-            Error loading announcements. Please try again.
-          </p>
-        </div>
-      )}
+
       <Table>
         <TableHeader>
           <TableRow>

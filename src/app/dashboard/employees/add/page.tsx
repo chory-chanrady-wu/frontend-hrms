@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -65,7 +66,12 @@ export default function AddEmployeePage() {
 
     createEmployee(fd, {
       onSuccess: () => router.push("/dashboard/employees"),
-      onError: (err) => alert("Failed to create: " + (err as Error).message),
+      onError: (err) =>
+        Swal.fire(
+          "Error",
+          "Failed to create: " + (err as Error).message,
+          "error",
+        ),
     });
   };
 

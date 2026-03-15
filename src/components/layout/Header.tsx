@@ -112,7 +112,7 @@ export default function Header() {
           <Button
             variant="ghost"
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-4 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition"
+            className="flex items-center gap-4 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-4 py-6 transition"
           >
             {avatarImage ? (
               <img

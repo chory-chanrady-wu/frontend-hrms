@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteAnnouncement } from "@/hooks/announcement-query";
@@ -66,19 +67,64 @@ export default function AnnouncementDetailPage() {
 
   // Delete handler
   function handleDelete() {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this announcement? This action cannot be undone.",
-      )
-    )
-      return;
-    deleteAnnouncement.mutate(Number(id), {
-      onSuccess: () => {
-        router.push("/dashboard/announcements");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this announcement? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      customClass: {
+        popup: `swal2-popup-theme`,
+        title: "swal2-title-theme",
+        htmlContainer: "swal2-html-theme",
+        confirmButton: "swal2-confirm-theme",
+        cancelButton: "swal2-cancel-theme",
       },
-      onError: () => {
-        alert("Failed to delete announcement.");
-      },
+      background: document.documentElement.classList.contains("dark")
+        ? "#1e293b"
+        : "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteAnnouncement.mutate(Number(id), {
+          onSuccess: () => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Announcement has been deleted.",
+              icon: "success",
+              customClass: {
+                popup: `swal2-popup-theme`,
+                title: "swal2-title-theme",
+                htmlContainer: "swal2-html-theme",
+                confirmButton: "swal2-confirm-theme",
+                cancelButton: "swal2-cancel-theme",
+              },
+              background: document.documentElement.classList.contains("dark")
+                ? "#1e293b"
+                : "#fff",
+            });
+            router.push("/dashboard/announcements");
+          },
+          onError: () => {
+            Swal.fire({
+              title: "Error",
+              text: "Failed to delete announcement.",
+              icon: "error",
+              customClass: {
+                popup: `swal2-popup-theme`,
+                title: "swal2-title-theme",
+                htmlContainer: "swal2-html-theme",
+                confirmButton: "swal2-confirm-theme",
+                cancelButton: "swal2-cancel-theme",
+              },
+              background: document.documentElement.classList.contains("dark")
+                ? "#1e293b"
+                : "#fff",
+            });
+          },
+        });
+      }
     });
   }
 
@@ -94,7 +140,7 @@ export default function AnnouncementDetailPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-2xl sm:text-2xl font-extrabold text-slate-100 dark:text-white tracking-tight truncate ml-2">
+          <h1 className="text-2xl sm:text-2xl font-extrabold dark:text-white tracking-tight truncate ml-2">
             Announcement Details
           </h1>
         </div>

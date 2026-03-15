@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useParams, useRouter } from "next/navigation";
 import { useGetUserById, useDeleteUser } from "@/hooks/user-query";
@@ -25,9 +26,30 @@ export default function UserDetailPage() {
   const user: any = userResponse?.data ?? userResponse;
 
   const handleDelete = () => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    deleteUser(userId, {
-      onSuccess: () => router.push("/dashboard/settings/users"),
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteUser(userId, {
+          onSuccess: () => {
+            Swal.fire("Deleted!", "User has been deleted.", "success");
+            router.push("/dashboard/settings/users");
+          },
+          onError: (error: any) => {
+            Swal.fire(
+              "Error",
+              error?.message || "Failed to delete user.",
+              "error",
+            );
+          },
+        });
+      }
     });
   };
 

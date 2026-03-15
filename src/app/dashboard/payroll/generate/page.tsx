@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -82,7 +83,7 @@ export default function GeneratePayrollPage() {
     e.preventDefault();
     // Defensive: ensure employee is selected
     if (!selectedEmp) {
-      alert("Please select an employee.");
+      Swal.fire("Validation", "Please select an employee.", "warning");
       return;
     }
     createPayroll(
@@ -98,7 +99,11 @@ export default function GeneratePayrollPage() {
       {
         onSuccess: () => router.push("/dashboard/payroll"),
         onError: (err) =>
-          alert("Failed to generate: " + (err as Error).message),
+          Swal.fire(
+            "Error",
+            "Failed to generate: " + (err as Error).message,
+            "error",
+          ),
       },
     );
   };

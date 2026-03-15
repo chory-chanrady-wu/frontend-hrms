@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -55,7 +56,12 @@ export default function ApplyLeavePage() {
       },
       {
         onSuccess: () => router.push("/dashboard/leave"),
-        onError: (err) => alert("Failed to submit: " + (err as Error).message),
+        onError: (err) =>
+          Swal.fire(
+            "Error",
+            "Failed to submit: " + (err as Error).message,
+            "error",
+          ),
       },
     );
   };

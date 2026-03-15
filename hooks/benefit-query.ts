@@ -28,7 +28,9 @@ export const useGetAllBenefits = () => {
   return useQuery({
     queryKey: BEN_KEYS.lists(),
     queryFn: () => benefitsApi.getAllBenefits(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -36,7 +38,9 @@ export const useGetBenefitById = (id: number) => {
   return useQuery({
     queryKey: BEN_KEYS.detail(id),
     queryFn: () => benefitsApi.getBenefitById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -45,7 +49,9 @@ export const useGetBenefitByName = (name: string) => {
   return useQuery({
     queryKey: BEN_KEYS.byName(name),
     queryFn: () => benefitsApi.getBenefitByName(name),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!name,
   });
 };

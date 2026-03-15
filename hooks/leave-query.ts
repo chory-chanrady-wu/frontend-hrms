@@ -28,7 +28,9 @@ export const useGetAllLeaveTypes = () => {
   return useQuery({
     queryKey: LT_KEYS.lists(),
     queryFn: () => leaveTypesApi.getAllLeaveTypes(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -36,7 +38,9 @@ export const useGetLeaveTypeById = (id: number) => {
   return useQuery({
     queryKey: LT_KEYS.detail(id),
     queryFn: () => leaveTypesApi.getLeaveTypeById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -45,7 +49,9 @@ export const useGetLeaveTypeByName = (name: string) => {
   return useQuery({
     queryKey: LT_KEYS.byName(name),
     queryFn: () => leaveTypesApi.getLeaveTypeByName(name),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!name,
   });
 };

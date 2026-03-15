@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import {
@@ -37,9 +38,30 @@ export default function UsersPage() {
   );
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      deleteUser.mutate(id);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteUser.mutate(id, {
+          onSuccess: () => {
+            Swal.fire("Deleted!", "User has been deleted.", "success");
+          },
+          onError: (error: any) => {
+            Swal.fire(
+              "Error",
+              error?.message || "Failed to delete user.",
+              "error",
+            );
+          },
+        });
+      }
+    });
   };
 
   if (isLoading) {

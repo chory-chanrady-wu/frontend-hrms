@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,7 +23,11 @@ export default function AddUserPage() {
     createUser(formData, {
       onSuccess: () => router.push("/dashboard/settings/users"),
       onError: (err) =>
-        alert("Failed to create user: " + (err as Error).message),
+        Swal.fire(
+          "Error",
+          "Failed to create user: " + (err as Error).message,
+          "error",
+        ),
     });
   };
 

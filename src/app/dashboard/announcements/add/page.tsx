@@ -1,5 +1,6 @@
 "use client";
 
+import { themedSwal } from "@/components/ui/ThemedSwal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -32,19 +33,25 @@ export default function AddAnnouncementPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     // Validate publish date before expire date
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Only compare date part
     if (form.publishedAt) {
       let publishDate = new Date(form.publishedAt);
       if (isNaN(publishDate.getTime())) {
-        setError("Invalid Publish Date & Time.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Invalid Publish Date & Time.",
+          icon: "warning",
+        });
         return;
       }
       if (publishDate < now) {
-        setError("Publish Date & Time must be today or in the future.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Publish Date & Time must be today or in the future.",
+          icon: "warning",
+        });
         return;
       }
     }
@@ -52,11 +59,19 @@ export default function AddAnnouncementPage() {
       // For datetime-local, treat empty time as 00:00
       let expireDate = new Date(form.expiresAt);
       if (isNaN(expireDate.getTime())) {
-        setError("Invalid Expire Date & Time.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Invalid Expire Date & Time.",
+          icon: "warning",
+        });
         return;
       }
       if (expireDate < now) {
-        setError("Expire Date & Time must be today or in the future.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Expire Date & Time must be today or in the future.",
+          icon: "warning",
+        });
         return;
       }
     }
@@ -64,7 +79,11 @@ export default function AddAnnouncementPage() {
       const publishDate = new Date(form.publishedAt);
       const expireDate = new Date(form.expiresAt);
       if (publishDate > expireDate) {
-        setError("Publish Date must be before Expire Date & Time.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Publish Date must be before Expire Date & Time.",
+          icon: "warning",
+        });
         return;
       }
     }
@@ -83,11 +102,19 @@ export default function AddAnnouncementPage() {
       },
       {
         onSuccess: () => {
-          setSuccess("Announcement created successfully!");
+          themedSwal({
+            title: "Success",
+            text: "Announcement created successfully!",
+            icon: "success",
+          });
           setTimeout(() => router.push("/dashboard/announcements"), 1200);
         },
         onError: (err: any) => {
-          setError(err?.message || "Failed to create announcement.");
+          themedSwal({
+            title: "Error",
+            text: err?.message || "Failed to create announcement.",
+            icon: "error",
+          });
         },
       },
     );
@@ -196,16 +223,7 @@ export default function AddAnnouncementPage() {
               />
             </div>
           </div>
-          {error && (
-            <div className="text-red-600 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="text-green-600 dark:text-green-400 text-sm">
-              {success}
-            </div>
-          )}
+          {/* SweetAlert2 handles error/success messages */}
           <button
             type="submit"
             disabled={isPending}

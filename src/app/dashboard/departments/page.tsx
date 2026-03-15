@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { useState } from "react";
 import { Building2, Users, Edit, Trash2, Search } from "lucide-react";
@@ -63,18 +64,37 @@ export default function DepartmentsPage() {
 
   const handleDelete = (id: number) => {
     if ((employeeCountByDept[id] || 0) > 0) {
-      alert(
+      Swal.fire(
+        "Error",
         "Cannot delete this department. It still has employees assigned to it.",
+        "error",
       );
       return;
     }
-    if (deleteConfirm === id) {
-      deleteDepartment(id);
-      setDeleteConfirm(null);
-    } else {
-      setDeleteConfirm(id);
-      setTimeout(() => setDeleteConfirm(null), 3000);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this department?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteDepartment(id, {
+          onSuccess: () => {
+            Swal.fire("Deleted!", "Department has been deleted.", "success");
+          },
+          onError: (error: any) => {
+            Swal.fire(
+              "Error",
+              error?.message || "Failed to delete department.",
+              "error",
+            );
+          },
+        });
+      }
+    });
   };
 
   return (

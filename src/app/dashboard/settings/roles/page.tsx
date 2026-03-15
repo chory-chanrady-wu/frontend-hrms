@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { Shield, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -35,9 +36,30 @@ export default function RolesPage() {
       : [];
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this role?")) {
-      deleteRole.mutate(id);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this role?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteRole.mutate(id, {
+          onSuccess: () => {
+            Swal.fire("Deleted!", "Role has been deleted.", "success");
+          },
+          onError: (error: any) => {
+            Swal.fire(
+              "Error",
+              error?.message || "Failed to delete role.",
+              "error",
+            );
+          },
+        });
+      }
+    });
   };
 
   if (isLoading) {

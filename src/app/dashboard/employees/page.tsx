@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { Mail, Edit, Trash2, Loader2 } from "lucide-react";
 import {
   Table,
@@ -64,9 +65,30 @@ export default function EmployeesPage() {
   const inactiveCount = employeeList.filter((e) => e.status === false).length;
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      deleteEmployee(id);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this employee?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteEmployee(id, {
+          onSuccess: () => {
+            Swal.fire("Deleted!", "Employee has been deleted.", "success");
+          },
+          onError: (error: any) => {
+            Swal.fire(
+              "Error",
+              error?.message || "Failed to delete employee.",
+              "error",
+            );
+          },
+        });
+      }
+    });
   };
 
   if (isLoading) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { themedSwal } from "@/components/ui/ThemedSwal";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { format } from "date-fns";
@@ -56,21 +57,28 @@ export default function AnnouncementEditPage() {
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     // Validate publish/expire dates
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     if (form.publishedAt) {
       const publishDate = new Date(form.publishedAt);
       if (publishDate < now) {
-        setError("Published At must be today or in the future.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Published At must be today or in the future.",
+          icon: "warning",
+        });
         return;
       }
     }
     if (form.expiresAt) {
       const expireDate = new Date(form.expiresAt);
       if (expireDate < now) {
-        setError("Expires At must be today or in the future.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Expires At must be today or in the future.",
+          icon: "warning",
+        });
         return;
       }
     }
@@ -78,7 +86,11 @@ export default function AnnouncementEditPage() {
       const publishDate = new Date(form.publishedAt);
       const expireDate = new Date(form.expiresAt);
       if (publishDate > expireDate) {
-        setError("Published At must be before Expires At.");
+        themedSwal({
+          title: "Validation Error",
+          text: "Published At must be before Expires At.",
+          icon: "warning",
+        });
         return;
       }
     }
@@ -95,10 +107,19 @@ export default function AnnouncementEditPage() {
       },
       {
         onSuccess: () => {
-          router.back();
+          themedSwal({
+            title: "Success",
+            text: "Announcement updated successfully!",
+            icon: "success",
+          });
+          setTimeout(() => router.back(), 1200);
         },
         onError: () => {
-          setError("Failed to update announcement.");
+          themedSwal({
+            title: "Error",
+            text: "Failed to update announcement.",
+            icon: "error",
+          });
         },
       },
     );
@@ -140,7 +161,7 @@ export default function AnnouncementEditPage() {
       <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">
         Edit Announcement
       </h1>
-      {error && <div className="mb-4 text-red-600">{error}</div>}
+      {/* SweetAlert2 handles error/success messages */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">

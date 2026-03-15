@@ -15,7 +15,9 @@ export const useGetAllEmployees = () => {
   return useQuery({
     queryKey: EMP_KEYS.lists(),
     queryFn: () => employeesApi.getAllEmployees(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -23,7 +25,9 @@ export const useGetEmployeeById = (id: number) => {
   return useQuery({
     queryKey: EMP_KEYS.detail(id),
     queryFn: () => employeesApi.getEmployeeById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -32,7 +36,9 @@ export const useGetEmployeesByDepartment = (departmentId: number) => {
   return useQuery({
     queryKey: EMP_KEYS.byDept(departmentId),
     queryFn: () => employeesApi.getEmployeesByDepartment(departmentId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!departmentId,
   });
 };
@@ -41,7 +47,9 @@ export const useGetEmployeesByStatus = (status: string) => {
   return useQuery({
     queryKey: EMP_KEYS.byStatus(status),
     queryFn: () => employeesApi.getEmployeesByStatus(status),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!status,
   });
 };

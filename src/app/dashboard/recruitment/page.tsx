@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { Briefcase, MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
@@ -51,19 +52,29 @@ export default function RecruitmentPage() {
 
   // Handler for deleting a job posting
   const handleDelete = async (jobId: string) => {
-    if (!window.confirm("Are you sure you want to delete this job posting?"))
-      return;
-    setLoading(true);
-    try {
-      setJobPostings((prev: any) =>
-        prev.filter((job: any) => job.jobId !== jobId),
-      );
-      alert("Job posting deleted.");
-    } catch (error) {
-      alert("Failed to delete job posting.");
-    } finally {
-      setLoading(false);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this job posting?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setLoading(true);
+        try {
+          setJobPostings((prev: any) =>
+            prev.filter((job: any) => job.jobId !== jobId),
+          );
+          Swal.fire("Deleted!", "Job posting deleted.", "success");
+        } catch (error) {
+          Swal.fire("Error", "Failed to delete job posting.", "error");
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   // Handler for closing a job posting
@@ -75,9 +86,9 @@ export default function RecruitmentPage() {
           job.jobId === jobId ? { ...job, jobStatus: "Closed" } : job,
         ),
       );
-      alert("Job posting closed.");
+      Swal.fire("Closed!", "Job posting closed.", "success");
     } catch (error) {
-      alert("Failed to close job posting.");
+      Swal.fire("Error", "Failed to close job posting.", "error");
     } finally {
       setLoading(false);
     }

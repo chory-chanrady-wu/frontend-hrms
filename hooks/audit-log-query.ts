@@ -16,7 +16,9 @@ export const useGetAllAuditLogs = () => {
   return useQuery({
     queryKey: AL_KEYS.lists(),
     queryFn: () => auditLogsApi.getAllAuditLogs(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -24,7 +26,9 @@ export const useGetAuditLogById = (id: number) => {
   return useQuery({
     queryKey: AL_KEYS.detail(id),
     queryFn: () => auditLogsApi.getAuditLogById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -33,7 +37,9 @@ export const useGetAuditLogsByUser = (userId: number) => {
   return useQuery({
     queryKey: AL_KEYS.byUser(userId),
     queryFn: () => auditLogsApi.getAuditLogsByUser(userId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!userId,
   });
 };
@@ -42,7 +48,9 @@ export const useGetAuditLogsByTable = (tableName: string) => {
   return useQuery({
     queryKey: AL_KEYS.byTable(tableName),
     queryFn: () => auditLogsApi.getAuditLogsByTable(tableName),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!tableName,
   });
 };
@@ -51,7 +59,9 @@ export const useGetAuditLogsByAction = (action: string) => {
   return useQuery({
     queryKey: AL_KEYS.byAction(action),
     queryFn: () => auditLogsApi.getAuditLogsByAction(action),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!action,
   });
 };

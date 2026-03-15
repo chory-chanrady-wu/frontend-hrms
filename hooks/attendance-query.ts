@@ -14,7 +14,9 @@ export const useGetAllAttendance = () => {
   return useQuery({
     queryKey: ATT_KEYS.lists(),
     queryFn: () => attendanceApi.getAllAttendance(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -22,7 +24,9 @@ export const useGetAttendanceById = (id: number) => {
   return useQuery({
     queryKey: ATT_KEYS.detail(id),
     queryFn: () => attendanceApi.getAttendanceById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -31,7 +35,9 @@ export const useGetAttendanceByEmployee = (employeeId: number) => {
   return useQuery({
     queryKey: ATT_KEYS.byEmployee(employeeId),
     queryFn: () => attendanceApi.getAttendanceByEmployee(employeeId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!employeeId,
   });
 };

@@ -14,7 +14,9 @@ export const useGetAllDepartments = () => {
   return useQuery({
     queryKey: DEPT_KEYS.lists(),
     queryFn: () => departmentsApi.getAllDepartments(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -22,7 +24,9 @@ export const useGetDepartmentById = (id: number) => {
   return useQuery({
     queryKey: DEPT_KEYS.detail(id),
     queryFn: () => departmentsApi.getDepartmentById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -31,7 +35,9 @@ export const useGetDepartmentByName = (name: string) => {
   return useQuery({
     queryKey: DEPT_KEYS.byName(name),
     queryFn: () => departmentsApi.getDepartmentByName(name),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!name,
   });
 };

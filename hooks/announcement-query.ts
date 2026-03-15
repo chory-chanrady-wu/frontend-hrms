@@ -12,7 +12,9 @@ export const useGetAllAnnouncements = () => {
   return useQuery({
     queryKey: ANNOUNCEMENT_KEYS.lists(),
     queryFn: () => announcementsApi.getAllAnnouncements(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -20,7 +22,9 @@ export const useGetAnnouncementById = (id: number) => {
   return useQuery({
     queryKey: ANNOUNCEMENT_KEYS.detail(id),
     queryFn: () => announcementsApi.getAnnouncementById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };

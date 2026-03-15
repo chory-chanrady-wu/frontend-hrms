@@ -1,4 +1,5 @@
-"use client";
+import Swal from "sweetalert2";
+("use client");
 
 import { Calendar, Clock, FileText, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -221,12 +222,17 @@ export default function LeavePage() {
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right">
                       <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              "Are you sure you want to delete this leave request?",
-                            )
-                          ) {
+                        onClick={async () => {
+                          const result = await Swal.fire({
+                            title: "Are you sure?",
+                            text: "Are you sure you want to delete this leave request?",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#3085d6",
+                            confirmButtonText: "Yes, delete it!",
+                          });
+                          if (result.isConfirmed) {
                             deleteLeaveRequest(request.id);
                           }
                         }}

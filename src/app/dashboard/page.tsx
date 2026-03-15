@@ -69,15 +69,19 @@ export default function DashboardPage() {
   });
 
   const totalEmployees = employees.length;
-  const presentToday = attendanceList.filter(
-    (a: any) => a.status === "present" || a.status === "Present",
-  ).length;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const presentToday = attendanceList.filter((a: any) => {
+    if (!(a.status === "present" || a.status === "Present")) return false;
+    if (!a.checkIn) return false;
+    const checkInDate = new Date(a.checkIn);
+    checkInDate.setHours(0, 0, 0, 0);
+    return checkInDate.getTime() === today.getTime();
+  }).length;
   const pendingRequests = leaveRequests.filter(
     (l: any) => l.status === "pending" || l.status === "Pending",
   ).length;
   // Calculate employees on leave today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const onLeaveToday = leaveRequests.filter((l: any) => {
     if (!(l.status === "approved" || l.status === "Approved")) return false;
     const start = l.startDate ? new Date(l.startDate) : null;

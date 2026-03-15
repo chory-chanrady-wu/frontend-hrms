@@ -29,8 +29,3 @@
 .dark .swal2-cancel-theme {
   background-color: #3b82f6 !important;
 }
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@custom-variant dark (&:where(.dark, .dark *));
