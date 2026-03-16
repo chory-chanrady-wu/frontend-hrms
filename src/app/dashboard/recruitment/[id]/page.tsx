@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import Swal from "sweetalert2";
+import { themedSwal } from "@/components/ui/ThemedSwal";
 
 type JobDetail = {
   jobId: number | string;
@@ -81,22 +81,50 @@ export default function RecruitmentJobDetailPage() {
 
   // Delete handler with SweetAlert
   const handleDelete = async () => {
-    Swal.fire({
+    themedSwal({
       title: "Are you sure?",
       text: "This will permanently delete the job posting.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "swal2-popup-theme",
+        title: "swal2-title-theme",
+        htmlContainer: "swal2-html-theme",
+        confirmButton: "swal2-confirm-theme",
+        cancelButton: "swal2-cancel-theme",
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await jobPostingsApi.deleteJobPosting(job.jobId);
-          Swal.fire("Deleted!", "Job posting deleted.", "success");
+          await themedSwal({
+            icon: "success",
+            title: "Deleted!",
+            text: "Job posting deleted.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
           router.push("/dashboard/recruitment");
         } catch (error) {
-          Swal.fire("Error", "Failed to delete job posting.", "error");
+          await themedSwal({
+            icon: "error",
+            title: "Error",
+            text: "Failed to delete job posting.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
         }
       }
     });

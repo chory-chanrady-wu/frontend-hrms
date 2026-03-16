@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { jobPostingsApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { themedSwal } from "@/components/ui/ThemedSwal";
 import Link from "next/link";
 import Select, { SingleValue, StylesConfig } from "react-select";
 // Custom styles for react-select to match Tailwind dark/light mode
@@ -192,8 +193,19 @@ export default function EditJobPostingPage() {
         updatedAt: new Date().toISOString(),
       };
       await jobPostingsApi.updateJobPosting(String(id), payload);
+      await themedSwal({
+        icon: "success",
+        title: "Job posting updated successfully!",
+        showConfirmButton: true,
+      });
       router.push(`/dashboard/recruitment/${id}`);
     } catch (err) {
+      await themedSwal({
+        icon: "error",
+        title: "Failed to update job posting",
+        text: (err as Error).message || "An error occurred.",
+        showConfirmButton: true,
+      });
       setError("Failed to update job posting.");
     } finally {
       setSaving(false);

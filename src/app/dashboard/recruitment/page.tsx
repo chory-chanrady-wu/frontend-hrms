@@ -1,5 +1,5 @@
 "use client";
-import Swal from "sweetalert2";
+import { themedSwal } from "@/components/ui/ThemedSwal";
 
 import { Briefcase, MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
@@ -52,14 +52,20 @@ export default function RecruitmentPage() {
 
   // Handler for deleting a job posting
   const handleDelete = async (jobId: string) => {
-    Swal.fire({
+    themedSwal({
       title: "Are you sure?",
       text: "Are you sure you want to delete this job posting?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "swal2-popup-theme",
+        title: "swal2-title-theme",
+        htmlContainer: "swal2-html-theme",
+        confirmButton: "swal2-confirm-theme",
+        cancelButton: "swal2-cancel-theme",
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         setLoading(true);
@@ -68,13 +74,31 @@ export default function RecruitmentPage() {
           setJobPostings((prev: any) =>
             prev.filter((job: any) => job.jobId !== jobId),
           );
-          Swal.fire("Deleted!", "Job posting deleted.", "success");
+          await themedSwal({
+            icon: "success",
+            title: "Deleted!",
+            text: "Job posting deleted.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
         } catch (error: any) {
-          Swal.fire(
-            "Error",
-            error?.message || "Failed to delete job posting.",
-            "error",
-          );
+          await themedSwal({
+            icon: "error",
+            title: "Error",
+            text: error?.message || "Failed to delete job posting.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
         } finally {
           setLoading(false);
         }
@@ -84,14 +108,20 @@ export default function RecruitmentPage() {
 
   // Handler for closing a job posting
   const handleClose = async (jobId: string) => {
-    Swal.fire({
+    themedSwal({
       title: "Are you sure?",
       text: "Are you sure you want to close this job posting?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, close it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "swal2-popup-theme",
+        title: "swal2-title-theme",
+        htmlContainer: "swal2-html-theme",
+        confirmButton: "swal2-confirm-theme",
+        cancelButton: "swal2-cancel-theme",
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
         setLoading(true);
@@ -102,13 +132,31 @@ export default function RecruitmentPage() {
               job.jobId === jobId ? { ...job, jobStatus: "Closed" } : job,
             ),
           );
-          Swal.fire("Closed!", "Job posting closed.", "success");
+          await themedSwal({
+            icon: "success",
+            title: "Closed!",
+            text: "Job posting closed.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
         } catch (error: any) {
-          Swal.fire(
-            "Error",
-            error?.message || "Failed to close job posting.",
-            "error",
-          );
+          await themedSwal({
+            icon: "error",
+            title: "Error",
+            text: error?.message || "Failed to close job posting.",
+            showConfirmButton: true,
+            customClass: {
+              popup: "swal2-popup-theme",
+              title: "swal2-title-theme",
+              htmlContainer: "swal2-html-theme",
+              confirmButton: "swal2-confirm-theme",
+            },
+          });
         } finally {
           setLoading(false);
         }
@@ -163,9 +211,7 @@ export default function RecruitmentPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-600">
-                All Positions
-              </p>
+              <p className="text-sm font-medium text-blue-600">All Positions</p>
               <p className="text-3xl font-bold text-blue-900 mt-2">
                 {jobPostings.length}
               </p>
@@ -264,8 +310,8 @@ export default function RecruitmentPage() {
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild disabled={loading}>
+                    <DropdownMenuContent align="end" className="bg-white dark:bg-slate-900">
+                      <DropdownMenuItem asChild disabled={loading} className="text-green-600">
                         <Link
                           href={`/dashboard/recruitment/${job.jobId}`}
                           tabIndex={loading ? -1 : 0}
@@ -273,7 +319,7 @@ export default function RecruitmentPage() {
                           View
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild disabled={loading}>
+                      <DropdownMenuItem asChild disabled={loading} className="text-blue-600">
                         <Link
                           href={`/dashboard/recruitment/${job.jobId}/edit`}
                           tabIndex={loading ? -1 : 0}
@@ -286,14 +332,10 @@ export default function RecruitmentPage() {
                         onClick={() => handleDelete(job.jobId)}
                         variant="destructive"
                         disabled={loading}
+                        className="text-red-600"
+
                       >
                         Delete
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleClose(job.jobId)}
-                        disabled={loading || job.jobStatus === "Closed"}
-                      >
-                        Close
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

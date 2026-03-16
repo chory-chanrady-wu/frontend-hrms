@@ -1,6 +1,7 @@
 "use client";
 
 import { jobPostingsApi } from "@/lib/api";
+import { themedSwal } from "@/components/ui/ThemedSwal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Select, { SingleValue } from "react-select";
@@ -234,10 +235,14 @@ export default function AddJobPostingPage() {
     // Map form fields to required API fields and types
     // Generate a random UUID for jobId (for demo, not cryptographically secure)
     function uuidv4() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+          var r = (Math.random() * 16) | 0,
+            v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        },
+      );
     }
     const payload = {
       jobId: uuidv4(),
@@ -256,15 +261,30 @@ export default function AddJobPostingPage() {
       closingDate: form.closingDate,
       jobStatus: form.jobStatus,
       createdBy: form.createdBy,
-      createdAt: form.createdAt && form.createdAt !== "" ? form.createdAt : new Date().toISOString(),
-      updatedAt: form.updatedAt && form.updatedAt !== "" ? form.updatedAt : new Date().toISOString(),
+      createdAt:
+        form.createdAt && form.createdAt !== ""
+          ? form.createdAt
+          : new Date().toISOString(),
+      updatedAt:
+        form.updatedAt && form.updatedAt !== ""
+          ? form.updatedAt
+          : new Date().toISOString(),
     };
     try {
       await jobPostingsApi.createJobPosting(payload);
-      alert("Job posting created successfully!");
+      await themedSwal({
+        icon: "success",
+        title: "Job posting created successfully!",
+        showConfirmButton: true,
+      });
       router.push("/dashboard/recruitment");
     } catch (error) {
-      alert((error as Error).message || "Failed to create job posting");
+      await themedSwal({
+        icon: "error",
+        title: "Failed to create job posting",
+        text: (error as Error).message || "An error occurred.",
+        showConfirmButton: true,
+      });
     } finally {
       setLoading(false);
     }
