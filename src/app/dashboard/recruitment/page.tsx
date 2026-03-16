@@ -164,7 +164,7 @@ export default function RecruitmentPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-blue-600">
-                Open Positions
+                All Positions
               </p>
               <p className="text-3xl font-bold text-blue-900 mt-2">
                 {jobPostings.length}
@@ -173,23 +173,22 @@ export default function RecruitmentPage() {
             <Briefcase className="h-12 w-12 text-blue-600 opacity-20" />
           </div>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 dark:bg-slate-800 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-red-600">
-                Closed Positions
+              <p className="text-sm font-medium text-green-600">
+                Open Positions
               </p>
-              <p className="text-3xl font-bold text-red-900 mt-2">
+              <p className="text-3xl font-bold text-green-900 mt-2">
                 {
-                  jobPostings.filter((job: any) => job.jobStatus === "Closed")
+                  jobPostings.filter((job: any) => job.jobStatus === "open")
                     .length
                 }
               </p>
             </div>
-            <Briefcase className="h-12 w-12 text-red-600 opacity-20" />
+            <Briefcase className="h-12 w-12 text-green-600 opacity-20" />
           </div>
         </div>
-        {/* ...other summary cards... */}
       </div>
 
       {/* Open Positions */}
@@ -252,7 +251,7 @@ export default function RecruitmentPage() {
                 </TableCell>
                 <TableCell>
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${job.jobStatus === "Closed" ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${job.jobStatus === "closed" ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}
                   >
                     {job.jobStatus}
                   </span>
