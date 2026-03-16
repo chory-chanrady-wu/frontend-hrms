@@ -1,6 +1,8 @@
 "use client";
 
 import Swal from "sweetalert2";
+import { useAuth } from "@/hooks/useAuth";
+import { hasPermission } from "@/lib/permissions";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDeleteAnnouncement } from "@/hooks/announcement-query";
@@ -34,6 +36,7 @@ export default function AnnouncementDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const deleteAnnouncement = useDeleteAnnouncement();
+  const { permissions } = useAuth() || { permissions: [] };
 
   async function fetchData() {
     setLoading(true);
@@ -146,53 +149,57 @@ export default function AnnouncementDetailPage() {
           </h1>
         </div>
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="default"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2"
-            onClick={() =>
-              router.push(`/dashboard/announcements/${announcement.id}/edit`)
-            }
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {hasPermission(permissions, "announcements:update") && (
+            <Button
+              size="sm"
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2"
+              onClick={() =>
+                router.push(`/dashboard/announcements/${announcement.id}/edit`)
+              }
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 00-4-4l-8 8v3h3z"
-              />
-            </svg>
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center gap-2"
-            onClick={handleDelete}
-            disabled={deleteAnnouncement.isPending}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 00-4-4l-8 8v3h3z"
+                />
+              </svg>
+              Edit
+            </Button>
+          )}
+          {hasPermission(permissions, "announcements:delete") && (
+            <Button
+              size="sm"
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center gap-2"
+              onClick={handleDelete}
+              disabled={deleteAnnouncement.isPending}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m5 0H6"
-              />
-            </svg>
-            {deleteAnnouncement.isPending ? "Deleting..." : "Delete"}
-          </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m5 0H6"
+                />
+              </svg>
+              {deleteAnnouncement.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          )}
         </div>
       </div>
       <div className="max-w-full mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mt-10 shadow-lg relative overflow-hidden">

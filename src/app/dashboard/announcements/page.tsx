@@ -46,6 +46,8 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { hasPermission } from "@/lib/permissions";
 import { useRouter } from "next/navigation";
 import { useGetAllAnnouncements } from "@/hooks/announcement-query";
 import { announcementsApi } from "@/lib/api";
@@ -148,16 +150,20 @@ export default function AnnouncementsPage() {
     });
   }
 
+  const auth = useAuth();
+  const permissions = auth?.permissions ?? [];
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Announcements</h1>
-        <button
-          className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all dark:bg-blue-900/30 dark:text-blue-100 border border-blue-700"
-          onClick={() => router.push("/dashboard/announcements/add")}
-        >
-          New Announcement
-        </button>
+        {hasPermission(permissions, "announcements:create") && (
+          <button
+            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all dark:bg-blue-900/30 dark:text-blue-100 border border-blue-700"
+            onClick={() => router.push("/dashboard/announcements/add")}
+          >
+            New Announcement
+          </button>
+        )}
       </div>
 
       {isLoading && (
@@ -333,25 +339,29 @@ export default function AnnouncementsPage() {
                     >
                       <Eye className="h-4 w-4 mr-2 text-green-600" /> View
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/announcements/${announcement.id}/edit`,
-                        )
-                      }
-                    >
-                      <Pencil className="h-4 w-4 mr-2 text-blue-600" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDelete(announcement.id)}
-                      className="text-red-600 focus:text-red-600"
-                      disabled={deletingId === announcement.id}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      {deletingId === announcement.id
-                        ? "Deleting..."
-                        : "Delete"}
-                    </DropdownMenuItem>
+                    {hasPermission(permissions, "announcements:update") && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(
+                            `/dashboard/announcements/${announcement.id}/edit`,
+                          )
+                        }
+                      >
+                        <Pencil className="h-4 w-4 mr-2 text-blue-600" /> Edit
+                      </DropdownMenuItem>
+                    )}
+                    {hasPermission(permissions, "announcements:delete") && (
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(announcement.id)}
+                        className="text-red-600 focus:text-red-600"
+                        disabled={deletingId === announcement.id}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {deletingId === announcement.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

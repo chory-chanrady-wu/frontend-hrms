@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/table";
 
 export default function RecruitmentPage() {
+  // Filter and sort state
+  const [filterTitle, setFilterTitle] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [sortField, setSortField] = useState("postingDate");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   // Job postings state
   const [jobPostings, setJobPostings] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +36,31 @@ export default function RecruitmentPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 9;
   const totalPages = Math.ceil(jobPostings.length / jobsPerPage);
-  const paginatedJobs = jobPostings.slice(
+  // Filter and sort jobs
+  const filteredJobs = jobPostings
+    .filter(
+      (job: any) =>
+        (!filterTitle ||
+          job.jobTitle.toLowerCase().includes(filterTitle.toLowerCase())) &&
+        (!filterDepartment ||
+          (job.departmentName || job.departmentId)
+            .toLowerCase()
+            .includes(filterDepartment.toLowerCase())) &&
+        (!filterStatus ||
+          job.jobStatus.toLowerCase() === filterStatus.toLowerCase()),
+    )
+    .sort((a: any, b: any) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+      if (sortField === "postingDate" || sortField === "closingDate") {
+        aVal = new Date(aVal);
+        bVal = new Date(bVal);
+      }
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  const paginatedJobs = filteredJobs.slice(
     (currentPage - 1) * jobsPerPage,
     currentPage * jobsPerPage,
   );
@@ -236,7 +266,41 @@ export default function RecruitmentPage() {
           </div>
         </div>
       </div>
-
+      {/* Filter & Sort Controls */}
+      <div className="flex flex-wrap gap-4 mb-6 items-center">
+        <input
+          type="text"
+          placeholder="Filter by job title"
+          value={filterTitle}
+          onChange={(e) => setFilterTitle(e.target.value)}
+          className="border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+        />
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+        >
+          <option value="">All Status</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+        </select>
+        <select
+          value={sortField}
+          onChange={(e) => setSortField(e.target.value)}
+          className="border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+        >
+          <option value="postingDate">Sort by Posting Date</option>
+          <option value="jobTitle">Sort by Job Title</option>
+          <option value="jobStatus">Sort by Status</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          className="border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+        >
+          {sortOrder === "asc" ? "Ascending" : "Descending"}
+        </button>
+      </div>
       {/* Open Positions */}
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden dark:bg-slate-800 dark:border-slate-700">
         <Table>
@@ -310,8 +374,15 @@ export default function RecruitmentPage() {
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white dark:bg-slate-900">
-                      <DropdownMenuItem asChild disabled={loading} className="text-green-600">
+                    <DropdownMenuContent
+                      align="end"
+                      className="bg-white dark:bg-slate-900"
+                    >
+                      <DropdownMenuItem
+                        asChild
+                        disabled={loading}
+                        className="text-green-600"
+                      >
                         <Link
                           href={`/dashboard/recruitment/${job.jobId}`}
                           tabIndex={loading ? -1 : 0}
@@ -319,7 +390,11 @@ export default function RecruitmentPage() {
                           View
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild disabled={loading} className="text-blue-600">
+                      <DropdownMenuItem
+                        asChild
+                        disabled={loading}
+                        className="text-blue-600"
+                      >
                         <Link
                           href={`/dashboard/recruitment/${job.jobId}/edit`}
                           tabIndex={loading ? -1 : 0}
@@ -333,7 +408,6 @@ export default function RecruitmentPage() {
                         variant="destructive"
                         disabled={loading}
                         className="text-red-600"
-
                       >
                         Delete
                       </DropdownMenuItem>

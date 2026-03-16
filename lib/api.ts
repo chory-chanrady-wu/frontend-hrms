@@ -1,3 +1,18 @@
+// Fetch current user
+export async function getUser() {
+  const res = await fetch(`${API_BASE_URL}/users`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
+
+// Fetch role by ID
+export async function getRoleById(roleId: number | string) {
+  const res = await fetch(`${API_BASE_URL}/roles/${roleId}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
 // import type { ApiResponse } from "./types";
 import { getAccessToken } from "./auth";
 
