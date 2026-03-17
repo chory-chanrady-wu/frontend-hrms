@@ -122,19 +122,25 @@ export default function RolesPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Link
-                      href={`/dashboard/settings/roles/${role.id}/edit`}
-                      className="p-2 text-slate-400 hover:text-blue-600 transition dark:text-slate-500 dark:hover:text-blue-400"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(role.id)}
-                      disabled={deleteRole.isPending}
-                      className="p-2 text-slate-400 hover:text-red-600 transition disabled:opacity-50 dark:text-slate-500 dark:hover:text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {/* Lock Admin and EMPLOYEE roles: hide edit/delete buttons */}
+                    {role.roleName !== "Admin" &&
+                      role.roleName !== "EMPLOYEE" && (
+                        <>
+                          <Link
+                            href={`/dashboard/settings/roles/${role.id}/edit`}
+                            className="p-2 text-slate-400 hover:text-blue-600 transition dark:text-slate-500 dark:hover:text-blue-400"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(role.id)}
+                            disabled={deleteRole.isPending}
+                            className="p-2 text-slate-400 hover:text-red-600 transition disabled:opacity-50 dark:text-slate-500 dark:hover:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
                   </div>
                 </div>
                 {permissions.length > 0 && (

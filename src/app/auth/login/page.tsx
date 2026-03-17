@@ -96,50 +96,74 @@ export default function LoginPage() {
     };
 
     login(credentials, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         // Store tokens in localStorage
         if (data.accessToken) {
           localStorage.setItem("accessToken", data.accessToken as string);
-          // Store in cookies for middleware
-          document.cookie = `accessToken=${data.accessToken as string}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          document.cookie = `accessToken=${data.accessToken as string}; path=/; max-age=${7 * 24 * 60 * 60}`;
         }
         if (data.refreshToken) {
           localStorage.setItem("refreshToken", data.refreshToken as string);
-          document.cookie = `refreshToken=${data.refreshToken as string}; path=/; max-age=${30 * 24 * 60 * 60}`; // 30 days
+          document.cookie = `refreshToken=${data.refreshToken as string}; path=/; max-age=${30 * 24 * 60 * 60}`;
         }
-        // Backward compatibility
         if (data.token) {
           localStorage.setItem("token", data.token as string);
-          document.cookie = `token=${data.token as string}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          document.cookie = `token=${data.token as string}; path=/; max-age=${7 * 24 * 60 * 60}`;
         }
 
-        // Store user identity for profile & other pages
-        if (data.user?.id) localStorage.setItem("userId", String(data.user.id));
-        if (data.user?.employeeId)
-          localStorage.setItem("employeeId", String(data.user.employeeId));
-        if (data.user?.username)
-          localStorage.setItem("username", data.user.username);
-        if (data.user?.fullName)
-          localStorage.setItem("fullName", data.user.fullName);
-        if (data.user?.email) localStorage.setItem("email", data.user.email);
-
-        // Fallback: decode JWT to extract userId if not in response body
-        const token = data.accessToken || data.token;
-        if (token && !data.user?.id && !data.user?.employeeId) {
-          try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            if (payload.userId)
-              localStorage.setItem("userId", String(payload.userId));
-            if (payload.employeeId)
-              localStorage.setItem("employeeId", String(payload.employeeId));
-            if (payload.sub)
-              localStorage.setItem("userId", String(payload.sub));
-          } catch {
-            // ignore decode errors
+        // Fetch and store full user object (including permissions)
+        try {
+          const userId =
+            data.user?.id ||
+            (data.accessToken
+              ? JSON.parse(atob(data.accessToken.split(".")[1])).userId
+              : null);
+          if (userId) {
+            const { usersApi } = await import("@/lib/api");
+            const { setUser } = await import("@/lib/auth");
+            const user = await usersApi.getUserById(userId);
+            setUser(user);
+            if (user && user.employeeId) {
+              localStorage.setItem("employeeId", String(user.employeeId));
+            }
           }
+        } catch (e) {
+          // fallback: store basic user info
+          if (data.user)
+            localStorage.setItem("user", JSON.stringify(data.user));
         }
 
-        router.push("/dashboard");
+        // Role-based redirect
+        let userRole = "";
+        // Try to get user role from localStorage or response
+        const storedUser =
+          typeof window !== "undefined" ? localStorage.getItem("user") : null;
+        if (storedUser) {
+          try {
+            const userObj = JSON.parse(storedUser);
+            if (typeof userObj === "object" && userObj !== null) {
+              if ("role" in userObj && typeof userObj.role === "string") {
+                userRole = userObj.permission;
+              } else if (
+                "roleName" in userObj &&
+                typeof userObj.roleName === "string"
+              ) {
+                userRole = userObj.roleName;
+              } else if (
+                "permission" in userObj &&
+                typeof userObj.permissions === "string"
+              ) {
+                userRole = userObj.permission;
+              }
+            }
+          } catch {}
+        }
+        // If no role found, treat as non-admin
+        if (userRole.toLowerCase() === "admin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard/profile");
+        }
       },
       onError: (error: unknown) => {
         const errMsg =

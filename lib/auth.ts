@@ -1,3 +1,28 @@
+// Store user object in localStorage
+export const setUser = (user: any) => {
+  localStorage.setItem("user", JSON.stringify(user));
+  // Save permissions separately for easy access
+  if (user && user.permissions) {
+    localStorage.setItem(
+      "permissions",
+      typeof user.permissions === "string"
+        ? user.permissions
+        : JSON.stringify(user.permissions),
+    );
+  }
+};
+
+// Get user object from localStorage
+export const getUser = (): any => {
+  if (typeof window === "undefined") return null;
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
+};
 export const logout = () => {
   // Clear localStorage
   localStorage.removeItem("accessToken");

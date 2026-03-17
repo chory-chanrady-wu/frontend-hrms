@@ -169,6 +169,7 @@ export const useUpdateLeaveRequest = () => {
       lrData: {
         employeeId: number;
         leaveTypeId: number;
+        leaveType: string;
         startDate: string;
         endDate: string;
         reason: string;
@@ -182,6 +183,7 @@ export const useUpdateLeaveRequest = () => {
         lrData: {
           employeeId: number;
           leaveTypeId: number;
+          leaveType: string;
           startDate: string;
           endDate: string;
           reason: string;

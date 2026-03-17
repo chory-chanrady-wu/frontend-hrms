@@ -111,11 +111,26 @@ export default function UserDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-full space-y-6">
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-              <User className="h-8 w-8 text-slate-400 dark:text-slate-300" />
+              {user.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt={user.fullName}
+                  className="w-15 h-15 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-600">
+                  {user.fullName
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </div>
+              )}
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">

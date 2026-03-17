@@ -44,6 +44,9 @@ importers:
       sweetalert2:
         specifier: ^11.26.22
         version: 11.26.22
+      sweetalert2-react-content:
+        specifier: ^5.1.2
+        version: 5.1.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sweetalert2@11.26.22)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -3629,6 +3632,13 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  sweetalert2-react-content@5.1.2:
+    resolution: {integrity: sha512-7s4JSqqw2OOSKxX+NjVkHwNmN2fGliulJYwjDYlYZ/yc9Gfslxd2XlYFFveEp7pXHVXpQHOAth+vnIKDpHAJNA==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+      sweetalert2: ^11.0.0
 
   sweetalert2@11.26.22:
     resolution: {integrity: sha512-UtfV5j7gXBRLm0+6Vm+MqIpsMA7CF7lOGeBj1sc8YSb2Q2xKT6mkSV63b4kFUGNs4vYa+Nd7ufZ97ZX9hNfqsA==}
@@ -7794,6 +7804,12 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  sweetalert2-react-content@5.1.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sweetalert2@11.26.22):
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      sweetalert2: 11.26.22
 
   sweetalert2@11.26.22: {}
 

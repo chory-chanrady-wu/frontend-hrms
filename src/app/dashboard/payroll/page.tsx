@@ -16,6 +16,31 @@ import {
 import type { EmployeeProfile } from "@/lib/types";
 
 export default function PayrollPage() {
+  // Get user role from localStorage
+  let userRole = "";
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (typeof userObj === "object" && userObj !== null) {
+          if ("role" in userObj && typeof userObj.role === "string") {
+            userRole = userObj.role;
+          } else if (
+            "roleName" in userObj &&
+            typeof userObj.roleName === "string"
+          ) {
+            userRole = userObj.roleName;
+          } else if (
+            "permission" in userObj &&
+            typeof userObj.permission === "string"
+          ) {
+            userRole = userObj.permission;
+          }
+        }
+      } catch {}
+    }
+  }
   // Year-based pagination
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
@@ -93,12 +118,14 @@ export default function PayrollPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
           Payroll
         </h1>
-        <Link
-          href="/dashboard/payroll/generate"
-          className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
-        >
-          Generate Payroll
-        </Link>
+        {userRole.toLowerCase() === "admin" && (
+          <Link
+            href="/dashboard/payroll/generate"
+            className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+          >
+            Generate Payroll
+          </Link>
+        )}
       </div>
 
       {/* Summary Cards */}

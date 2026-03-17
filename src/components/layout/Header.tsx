@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bell, LogOut, User, Sun, Moon, Monitor } from "lucide-react";
 import { logout } from "@/lib/auth";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useGetUserByUsername } from "@/hooks/user-query";
@@ -11,6 +13,7 @@ import { useGetAllEmployees } from "@/hooks/employee-query";
 import type { EmployeeProfile } from "@/lib/types";
 import { useTheme } from "@/src/components/ThemeProvider";
 
+const MySwal = withReactContent(Swal);
 export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -19,6 +22,7 @@ export default function Header() {
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("User");
   const [employeeId, setEmployeeId] = useState<number | null>(null);
+  const [avatarImage, setAvatarImage] = useState<string | null>(null);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("userId") || "";
@@ -29,6 +33,23 @@ export default function Header() {
     const empId = Number(localStorage.getItem("employeeId"));
     if (!Number.isNaN(empId) && empId > 0) {
       setEmployeeId(empId);
+    }
+
+    // Get imageUrl from localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.imageUrl) {
+          setAvatarImage(userObj.imageUrl);
+        } else {
+          setAvatarImage(null);
+        }
+      } catch {
+        setAvatarImage(null);
+      }
+    } else {
+      setAvatarImage(null);
     }
   }, []);
 
@@ -62,7 +83,7 @@ export default function Header() {
   const avatarName = currentEmployee?.fullName || displayName;
   const avatarRole =
     currentEmployee?.positionName || currentEmployee?.departmentName || "";
-  const avatarImage = currentEmployee?.imageUrl || "";
+  // avatarImage now comes from localStorage state
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -78,8 +99,27 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" &&
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const result = await MySwal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, log out",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#0369A1",
+      cancelButtonColor: "#d33",
+      background: isDark ? "#1e293b" : undefined,
+      color: isDark ? "#f1f5f9" : undefined,
+    });
+    if (result.isConfirmed) {
+      logout();
+    }
   };
 
   return (

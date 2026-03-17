@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useGetEmployeeById, useGetAllEmployees } from "@/hooks/employee-query";
 import { useGetUserByUsername } from "@/hooks/user-query";
+import { InfoRow } from "@/components/ui/InfoRow";
 import type { EmployeeProfile } from "@/lib/types";
 import {
   User,
@@ -138,11 +139,6 @@ export default function ProfilePage() {
   }
 
   const emp: any = employee;
-  const statusColor =
-    emp.status === true
-      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -173,11 +169,6 @@ export default function ProfilePage() {
             {emp.positionName || "—"}
           </p>
           <div className="flex justify-center gap-2 mt-3">
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusColor}`}
-            >
-              {emp.status === true ? "Active" : "Inactive"}
-            </span>
             <span
               className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                 emp.userStatus === "true"
@@ -323,28 +314,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="text-slate-400 dark:text-slate-500 mt-0.5">{icon}</div>
-      <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">
-          {value}
-        </p>
       </div>
     </div>
   );

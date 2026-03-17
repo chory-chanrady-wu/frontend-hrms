@@ -36,6 +36,30 @@ function formatTime(datetime: string) {
 }
 
 export default function DashboardPage() {
+  // Get user role from localStorage
+  let userRole = "";
+  const storedUser =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  if (storedUser) {
+    try {
+      const userObj = JSON.parse(storedUser);
+      userRole = userObj.role || userObj.roleName || userObj.permission || "";
+    } catch {}
+  }
+
+  // Only allow admin to view dashboard
+  if (userRole.toLowerCase() !== "admin") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <h1 className="text-2xl font-semibold text-red-600 mb-4">
+          Not Authorized
+        </h1>
+        <p className="text-lg text-gray-600">
+          You do not have access to the dashboard.
+        </p>
+      </div>
+    );
+  }
   const { data: employeesResponse, isLoading: loadingEmp } =
     useGetAllEmployees();
   const { data: attendanceResponse, isLoading: loadingAtt } =

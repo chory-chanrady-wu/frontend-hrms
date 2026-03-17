@@ -1,7 +1,7 @@
 "use client";
 import Swal from "sweetalert2";
 
-import { Calendar, Clock, FileText, Trash2 } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 import Link from "next/link";
 import {
   useGetAllLeaveRequests,
@@ -16,7 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { getAccessToken } from "@/lib/auth";
 
 export default function LeavePage() {
   // Pagination
@@ -35,11 +34,14 @@ export default function LeavePage() {
   const { mutate: deleteLeaveRequest } = useDeleteLeaveRequest();
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [permission, setPermission] = useState<string>("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userId = localStorage.getItem("employeeId") || "";
       setCurrentUserId(userId);
+      const perm = localStorage.getItem("permission") || "";
+      setPermission(perm);
     }
   }, []);
 
@@ -86,13 +88,6 @@ export default function LeavePage() {
           My Requests
         </h1>
         <div className="flex gap-3">
-          <Link
-            href="/dashboard/leave/approvals"
-            className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Approvals
-          </Link>
           <Link
             href="/dashboard/leave/apply"
             className="bg-linear-to-r from-[#0C4A6E] to-[#075985] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all"
@@ -187,12 +182,12 @@ export default function LeavePage() {
                   >
                     <TableCell>
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        #{request.employeeId}
+                        EMP-{request.employeeId}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-slate-900 dark:text-slate-100">
-                        {request.startDate} — {request.endDate}
+                        {request.startDate} To {request.endDate}
                       </div>
                     </TableCell>
                     <TableCell>
