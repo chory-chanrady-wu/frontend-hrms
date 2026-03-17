@@ -1,4 +1,4 @@
-# HRM System Frontend
+# HRM System Frontend By CHORY Chanrady
 
 A modern Human Resource Management (HRM) system frontend built with Next.js, React, and TypeScript. This project provides a comprehensive UI for managing employees, departments, attendance, payroll, recruitment, and more.
 
