@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { hasPermission } from "@/lib/permissions";
 import {
   LayoutDashboard,
   Megaphone,
@@ -183,9 +182,6 @@ const navSections = [
 export default function SidebarNavigation() {
   const pathname = usePathname();
   const auth = useAuth();
-  // Use roleName from user object if available
-  const userRole = auth?.user?.roleName || auth?.user?.role || "";
-  // Parse permissions if stringified
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     Overview: false,
     People: false,
@@ -194,7 +190,89 @@ export default function SidebarNavigation() {
     Reports: false,
     Admin: false,
   });
-  // Always use permissions from localStorage if available
+  let userRole = "";
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.roleName && typeof userObj.roleName === "string") {
+          userRole = userObj.roleName.toLowerCase().trim();
+        } else if (userObj.role && typeof userObj.role === "string") {
+          userRole = userObj.role.toLowerCase().trim();
+        } else if (
+          userObj.permission &&
+          typeof userObj.permission === "string"
+        ) {
+          userRole = userObj.permission.toLowerCase().trim();
+        }
+      } catch {}
+    }
+  }
+  if (!userRole && auth?.user) {
+    userRole =
+      auth.user.roleName?.toLowerCase().trim() ||
+      auth.user.role?.toLowerCase().trim() ||
+      auth.user.permission?.toLowerCase().trim() ||
+      "";
+  }
+  if (!userRole) userRole = "employee"; // fallback
+  const adminAllowed = navSections.flatMap((s) => s.items.map((i) => i.href));
+  const hrAllowed = [
+    "/dashboard/attendance",
+    "/dashboard/profile",
+    "/dashboard/leave",
+    "/dashboard/payroll",
+    "/dashboard/employees",
+    "/dashboard/departments",
+    "/dashboard/recruitment",
+    "/dashboard/recruitment/candidates",
+    "/dashboard/recruitment/interviews",
+    "/dashboard/reports",
+  ];
+  const managerAllowed = [
+    "/dashboard/attendance",
+    "/dashboard/profile",
+    "/dashboard/leave",
+    "/dashboard/payroll",
+    "/dashboard/employees",
+    "/dashboard/leave/approvals",
+  ];
+  const employeeAllowed = [
+    "/dashboard/attendance",
+    "/dashboard/profile",
+    "/dashboard/leave",
+    "/dashboard/payroll",
+  ];
+
+  let allowedRoutes: string[] = [];
+  if (userRole === "admin") {
+    allowedRoutes = adminAllowed;
+  } else if (userRole === "hr") {
+    allowedRoutes = hrAllowed;
+  } else if (userRole === "manager") {
+    allowedRoutes = managerAllowed;
+  } else if (userRole === "employee") {
+    allowedRoutes = employeeAllowed;
+  } else {
+    allowedRoutes = employeeAllowed; // fallback
+  }
+
+  // Debug log for troubleshooting role/permission issues
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.log(
+      "Sidebar userRole:",
+      userRole,
+      "allowedRoutes:",
+      allowedRoutes,
+      "auth.user:",
+      auth?.user,
+      "localStorage user:",
+      localStorage.getItem("user"),
+    );
+  }
+
   let permissions = [];
   let userPermissionsRaw = null;
   if (typeof window !== "undefined") {
@@ -209,20 +287,7 @@ export default function SidebarNavigation() {
   }
 
   const loading = auth?.loading ?? true;
-  // EMPLOYEE allowed routes
-  const employeeAllowed = [
-    "/dashboard/attendance",
-    "/dashboard/profile",
-    "/dashboard/leave",
-    "/dashboard/payroll",
-  ];
-  // Robust EMPLOYEE role/permission check (case-insensitive)
-  const isEmployee =
-    userRole.toLowerCase() === "employee" ||
-    (Array.isArray(permissions) &&
-      permissions.some((p: string) => p.toLowerCase().includes("employee"))) ||
-    (typeof permissions === "string" &&
-      permissions.toLowerCase().includes("employee"));
+
   // Find the most specific matching route across all sections
   const allItems = navSections.flatMap((s) => s.items);
   const bestMatch = allItems
@@ -249,62 +314,20 @@ export default function SidebarNavigation() {
         </div>
 
         {/* Navigation Groups */}
-        {isEmployee ? (
-          <SidebarGroup className="py-0.5 gap-0 mt-1">
-            <SidebarMenu className="gap-1">
-              {navSections
-                .flatMap((section) => section.items)
-                .filter((item) =>
-                  [
-                    "/dashboard/attendance",
-                    "/dashboard/profile",
-                    "/dashboard/leave",
-                    "/dashboard/payroll",
-                  ].includes(item.href),
-                )
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive = bestMatch?.href === item.href;
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        className="cursor-pointer text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:font-medium h-9"
-                      >
-                        <Link
-                          href={item.href}
-                          className="flex items-center gap-2"
-                        >
-                          <Icon className="h-5 w-5" />
-                          <span className="text-sm">{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-            </SidebarMenu>
-          </SidebarGroup>
-        ) : (
+        {userRole === "admin" ? (
           navSections.map((section) => {
-            let visibleItems = section.items.filter((item) =>
-              hasPermission(permissions, item.permission),
+            const visibleItems = section.items.filter((item) =>
+              allowedRoutes.includes(item.href),
             );
             if (visibleItems.length === 0) return null;
             return (
               <SidebarGroup key={section.title} className="py-0.5 gap-0 mt-1">
-                {/* Section Label Trigger */}
                 <button
                   onClick={() =>
-                    setOpenSections((prev) => {
-                      const newState = Object.fromEntries(
-                        Object.keys(prev).map((key) => [key, false]),
-                      );
-                      return {
-                        ...newState,
-                        [section.title]: !prev[section.title],
-                      };
-                    })
+                    setOpenSections((prev) => ({
+                      ...prev,
+                      [section.title]: !prev[section.title],
+                    }))
                   }
                   className="flex rounded-md w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest bg-white/80 text-black transition-colors hover:text-white hover:bg-white/20 mb-1"
                 >
@@ -341,6 +364,35 @@ export default function SidebarNavigation() {
               </SidebarGroup>
             );
           })
+        ) : (
+          <SidebarGroup className="py-0.5 gap-0 mt-1">
+            <SidebarMenu className="gap-1">
+              {navSections
+                .flatMap((section) => section.items)
+                .filter((item) => allowedRoutes.includes(item.href))
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = bestMatch?.href === item.href;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        className="cursor-pointer text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:font-medium h-9"
+                      >
+                        <Link
+                          href={item.href}
+                          className="flex items-center gap-2"
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+            </SidebarMenu>
+          </SidebarGroup>
         )}
       </SidebarContent>
     </Sidebar>
