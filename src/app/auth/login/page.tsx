@@ -128,12 +128,20 @@ export default function LoginPage() {
             user = await usersApi.getUserById(userId);
             if (isFullUser(user)) {
               setUser(user);
+              // Store full name for header
+              if (user.fullName) {
+                localStorage.setItem("fullName", user.fullName);
+              }
             }
           }
         } catch (e) {
           // fallback: store basic user info
-          if (data.user)
+          if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
+            if (data.user.fullName) {
+              localStorage.setItem("fullName", data.user.fullName);
+            }
+          }
         }
 
         // Check user status (active/inactive)

@@ -35,6 +35,8 @@ export const logout = () => {
   localStorage.removeItem("username");
   localStorage.removeItem("fullName");
   localStorage.removeItem("email");
+  localStorage.removeItem("permissions");
+  localStorage.removeItem("user");
 
   // Clear cookies
   document.cookie =
