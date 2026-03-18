@@ -25,21 +25,26 @@ export default function Header() {
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("userId") || "";
+    // Try to get username and employeeId from localStorage keys
+    let storedUsername = localStorage.getItem("userId") || "";
+    let empId = Number(localStorage.getItem("employeeId"));
     const storedFullName = localStorage.getItem("fullName") || "";
-    setUsername(storedUsername);
-    if (storedFullName) setDisplayName(storedFullName);
+    let userObj = null;
 
-    const empId = Number(localStorage.getItem("employeeId"));
-    if (!Number.isNaN(empId) && empId > 0) {
-      setEmployeeId(empId);
-    }
-
-    // Get imageUrl from localStorage
+    // Fallback: if not found, try to get from user object
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        const userObj = JSON.parse(storedUser);
+        userObj = JSON.parse(storedUser);
+        if (!storedUsername && userObj.username) {
+          storedUsername = userObj.username;
+        }
+        if ((Number.isNaN(empId) || empId <= 0) && userObj.employeeId) {
+          empId = Number(userObj.employeeId);
+        }
+        if (userObj.fullName && !storedFullName) {
+          setDisplayName(userObj.fullName);
+        }
         if (userObj.imageUrl) {
           setAvatarImage(userObj.imageUrl);
         } else {
@@ -50,6 +55,12 @@ export default function Header() {
       }
     } else {
       setAvatarImage(null);
+    }
+
+    setUsername(storedUsername);
+    if (storedFullName) setDisplayName(storedFullName);
+    if (!Number.isNaN(empId) && empId > 0) {
+      setEmployeeId(empId);
     }
   }, []);
 
@@ -62,10 +73,15 @@ export default function Header() {
   // Find the employee record for the logged-in user
   const employees = (() => {
     const raw = allEmployeesResponse?.data ?? allEmployeesResponse;
-    return Array.isArray(raw) ? (raw as EmployeeProfile[]) : [];
+    const arr = Array.isArray(raw) ? (raw as EmployeeProfile[]) : [];
+    console.log("employees array", arr);
+    return arr;
   })();
 
   const currentEmployee = (() => {
+    console.log("employeeId", employeeId);
+    console.log("username", username);
+    console.log("userResponse", userResponse);
     if (employeeId) {
       return employees.find((e) => e.id === employeeId) ?? null;
     }
@@ -81,10 +97,10 @@ export default function Header() {
   })();
 
   const avatarName = currentEmployee?.fullName || displayName;
+  // Debug log to inspect currentEmployee and its fields
+  console.log("currentEmployee", currentEmployee);
   const avatarRole =
     currentEmployee?.positionName || currentEmployee?.departmentName || "";
-  // avatarImage now comes from localStorage state
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
