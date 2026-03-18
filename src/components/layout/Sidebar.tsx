@@ -146,12 +146,6 @@ const navSections = [
         icon: Wallet,
         permission: "reports:read",
       },
-      {
-        label: "Performance",
-        href: "/dashboard/reports/performance",
-        icon: Star,
-        permission: "reports:read",
-      },
     ],
   },
   {
