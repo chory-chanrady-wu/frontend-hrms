@@ -57,7 +57,10 @@ export default function LoginPage() {
     setErrors(newErrors);
     return isValid;
   };
-
+  // Type guard to check if an object is a full User
+  function isFullUser(obj: any): obj is import("@/lib/types").User {
+    return obj && typeof obj.status === "boolean";
+  }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -112,6 +115,7 @@ export default function LoginPage() {
         }
 
         // Fetch and store full user object (including permissions)
+        let user = data.user;
         try {
           const userId =
             data.user?.id ||
@@ -121,16 +125,23 @@ export default function LoginPage() {
           if (userId) {
             const { usersApi } = await import("@/lib/api");
             const { setUser } = await import("@/lib/auth");
-            const user = await usersApi.getUserById(userId);
-            setUser(user);
-            if (user && user.employeeId) {
-              localStorage.setItem("employeeId", String(user.employeeId));
+            user = await usersApi.getUserById(userId);
+            if (isFullUser(user)) {
+              setUser(user);
             }
           }
         } catch (e) {
           // fallback: store basic user info
           if (data.user)
             localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+        // Check user status (active/inactive)
+        if (isFullUser(user) && user.status === false) {
+          setGeneralError(
+            "User is inactive. Please contact admin to activate your account.",
+          );
+          return;
         }
 
         // Role-based redirect
