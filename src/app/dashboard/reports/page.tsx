@@ -47,16 +47,6 @@ export default function ReportsPage() {
       loading: loadingPayroll,
       error: errorPayroll,
     },
-    {
-      id: 3,
-      title: "Performance Reports",
-      description: "Employee performance reviews and ratings",
-      href: "/dashboard/reports/performance",
-      icon: TrendingUp,
-      count: auditLogsData?.length || 0,
-      loading: loadingAudit,
-      error: errorAudit,
-    },
   ];
   // Get user role from localStorage
   let userRole = "";
