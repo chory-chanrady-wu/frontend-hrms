@@ -20,7 +20,7 @@ export default function RoleDetailPage() {
   const { data: roleResponse, isLoading, isError } = useGetRoleById(roleId);
   const { mutate: deleteRole, isPending: isDeleting } = useDeleteRole();
 
-  const role: any = roleResponse?.data ?? roleResponse;
+  const role = roleResponse?.data ?? roleResponse;
 
   const handleDelete = () => {
     if (!confirm("Are you sure you want to delete this role?")) return;

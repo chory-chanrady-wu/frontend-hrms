@@ -2,17 +2,11 @@
 
 import Swal from "sweetalert2";
 import { useState } from "react";
-import {
-  Mail,
-  Shield,
-  Edit,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { Mail, Shield, Edit, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGetAllUsers, useDeleteUser } from "@/hooks/user-query";
-import { UserInfo } from "@/lib/types";
+import { User } from "@/lib/types";
 
 const PAGE_SIZE = 8;
 
@@ -22,7 +16,7 @@ export default function UsersPage() {
   const deleteUser = useDeleteUser();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const users: UserInfo[] = Array.isArray(usersResponse)
+  const users: User[] = Array.isArray(usersResponse)
     ? usersResponse
     : Array.isArray(usersResponse?.data)
       ? usersResponse.data

@@ -58,8 +58,31 @@ export default function EmployeeDetailPage() {
       </div>
     );
   }
+  // Get user role from localStorage
+  let userRole = "";
+  const storedUser =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  if (storedUser) {
+    try {
+      const userObj = JSON.parse(storedUser);
+      userRole = userObj.role || userObj.roleName || userObj.permission || "";
+    } catch {}
+  }
 
-  const emp: any = employee?.data ?? employee;
+  // Only allow admin and hr to view dashboard
+  if (userRole.toLowerCase() !== "admin" && userRole.toLowerCase() !== "hr") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <h1 className="text-2xl font-semibold text-red-600 mb-4">
+          Not Authorized
+        </h1>
+        <p className="text-lg text-gray-600">
+          You do not have access to the dashboard.
+        </p>
+      </div>
+    );
+  }
+  const emp = employee?.data ?? employee;
 
   const statusColor =
     emp.status === true

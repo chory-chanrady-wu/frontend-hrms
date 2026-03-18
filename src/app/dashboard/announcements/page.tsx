@@ -1,37 +1,6 @@
-// Add this to your global CSS (e.g., styles/globals.css) for SweetAlert2 theme support
-/*
-.swal2-popup-theme {
-  background-color: #fff;
-  color: #1e293b;
-}
-.dark .swal2-popup-theme {
-  background-color: #1e293b !important;
-  color: #f1f5f9 !important;
-}
-.swal2-title-theme {
-  color: inherit;
-}
-.swal2-html-theme {
-  color: inherit;
-}
-.swal2-confirm-theme {
-  background-color: #dc2626 !important;
-  color: #fff !important;
-  border: none !important;
-}
-.swal2-cancel-theme {
-  background-color: #2563eb !important;
-  color: #fff !important;
-  border: none !important;
-}
-.dark .swal2-confirm-theme {
-  background-color: #ef4444 !important;
-}
-.dark .swal2-cancel-theme {
-  background-color: #3b82f6 !important;
-}
-*/
 "use client";
+// Add this to your global CSS (e.g., styles/globals.css) for SweetAlert2 theme support
+// (CSS moved to styles/globals.css)
 
 import { themedSwal } from "@/components/ui/ThemedSwal";
 import {
@@ -79,34 +48,59 @@ export default function AnnouncementsPage() {
     error,
     refetch,
   } = useGetAllAnnouncements();
-  const announcementsRaw: unknown = Array.isArray(response)
-    ? response
-    : Array.isArray(response?.data)
-      ? response.data
-      : [];
+  const auth = useAuth();
+  const permissions = auth?.permissions ?? [];
+
   // Type guard to ensure array of Announcement
   function isAnnouncementArray(arr: unknown): arr is Announcement[] {
     return (
       Array.isArray(arr) &&
       arr.every(
-        (a) =>
+        (a): a is Announcement =>
           typeof a === "object" &&
           a !== null &&
           "id" in a &&
-          typeof (a as any).id === "number" &&
+          typeof (a as Announcement).id === "number" &&
           "title" in a &&
-          typeof (a as any).title === "string",
+          typeof (a as Announcement).title === "string",
       )
     );
   }
+
+  // Get user role from localStorage
+  let userRole = "";
+  const storedUser =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  if (storedUser) {
+    try {
+      const userObj = JSON.parse(storedUser);
+      userRole = userObj.role || userObj.roleName || userObj.permission || "";
+    } catch {}
+  }
+
+  // Only allow admin and hr to view dashboard
+  if (userRole.toLowerCase() !== "admin") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <h1 className="text-2xl font-semibold text-red-600 mb-4">
+          Not Authorized
+        </h1>
+        <p className="text-lg text-gray-600">
+          You do not have access to the dashboard.
+        </p>
+      </div>
+    );
+  }
+
+  const announcementsRaw: unknown = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : [];
   const announcements: Announcement[] = isAnnouncementArray(announcementsRaw)
     ? announcementsRaw
     : [];
-  // Debug log to verify API response shape and values
-  // console.log("Announcements API response:", response);
-  // console.log("Announcements array:", announcements);
 
-  // Show SweetAlert2 error if announcements fail to load
   useEffect(() => {
     if (error) {
       themedSwal({
@@ -137,7 +131,7 @@ export default function AnnouncementsPage() {
             text: "Announcement has been deleted.",
             icon: "success",
           });
-        } catch (e) {
+        } catch (e: unknown) {
           themedSwal({
             title: "Error",
             text: "Failed to delete announcement.",
@@ -150,8 +144,6 @@ export default function AnnouncementsPage() {
     });
   }
 
-  const auth = useAuth();
-  const permissions = auth?.permissions ?? [];
   return (
     <div>
       <div className="flex items-center justify-between mb-6">

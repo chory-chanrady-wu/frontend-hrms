@@ -21,7 +21,7 @@ export default function EditUserPage() {
       ? rolesResponse.data
       : [];
 
-  const user: any = userResponse?.data ?? userResponse;
+  const user = userResponse?.data ?? userResponse;
 
   const [formData, setFormData] = useState({
     username: "",

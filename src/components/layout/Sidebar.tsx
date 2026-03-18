@@ -198,13 +198,11 @@ export default function SidebarNavigation() {
         const userObj = JSON.parse(storedUser);
         if (userObj.roleName && typeof userObj.roleName === "string") {
           userRole = userObj.roleName.toLowerCase().trim();
-        } else if (userObj.role && typeof userObj.role === "string") {
-          userRole = userObj.role.toLowerCase().trim();
         } else if (
-          userObj.permission &&
-          typeof userObj.permission === "string"
+          userObj.permissions &&
+          typeof userObj.permissions === "string"
         ) {
-          userRole = userObj.permission.toLowerCase().trim();
+          userRole = userObj.permissions.toLowerCase().trim();
         }
       } catch {}
     }
@@ -212,13 +210,14 @@ export default function SidebarNavigation() {
   if (!userRole && auth?.user) {
     userRole =
       auth.user.roleName?.toLowerCase().trim() ||
-      auth.user.role?.toLowerCase().trim() ||
-      auth.user.permission?.toLowerCase().trim() ||
-      "";
+      (typeof auth.user.permissions === "string"
+        ? auth.user.permissions.toLowerCase().trim()
+        : "");
   }
   if (!userRole) userRole = "employee"; // fallback
   const adminAllowed = navSections.flatMap((s) => s.items.map((i) => i.href));
   const hrAllowed = [
+    "/dashboard",
     "/dashboard/attendance",
     "/dashboard/profile",
     "/dashboard/leave",
@@ -256,34 +255,6 @@ export default function SidebarNavigation() {
     allowedRoutes = employeeAllowed;
   } else {
     allowedRoutes = employeeAllowed; // fallback
-  }
-
-  // Debug log for troubleshooting role/permission issues
-  if (typeof window !== "undefined") {
-    // eslint-disable-next-line no-console
-    console.log(
-      "Sidebar userRole:",
-      userRole,
-      "allowedRoutes:",
-      allowedRoutes,
-      "auth.user:",
-      auth?.user,
-      "localStorage user:",
-      localStorage.getItem("user"),
-    );
-  }
-
-  let permissions = [];
-  let userPermissionsRaw = null;
-  if (typeof window !== "undefined") {
-    userPermissionsRaw = localStorage.getItem("permissions");
-  }
-  if (userPermissionsRaw) {
-    try {
-      permissions = JSON.parse(userPermissionsRaw);
-    } catch {
-      permissions = [];
-    }
   }
 
   const loading = auth?.loading ?? true;

@@ -1,5 +1,7 @@
 // Store user object in localStorage
-export const setUser = (user: any) => {
+import type { User } from "./types";
+
+export const setUser = (user: User) => {
   localStorage.setItem("user", JSON.stringify(user));
   // Save permissions separately for easy access
   if (user && user.permissions) {
@@ -13,7 +15,7 @@ export const setUser = (user: any) => {
 };
 
 // Get user object from localStorage
-export const getUser = (): any => {
+export const getUser = (): User | null => {
   if (typeof window === "undefined") return null;
   const userStr = localStorage.getItem("user");
   if (!userStr) return null;

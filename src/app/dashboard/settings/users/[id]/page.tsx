@@ -23,7 +23,7 @@ export default function UserDetailPage() {
   const { data: userResponse, isLoading, isError } = useGetUserById(userId);
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
 
-  const user: any = userResponse?.data ?? userResponse;
+  const user = userResponse?.data ?? userResponse;
 
   const handleDelete = () => {
     Swal.fire({

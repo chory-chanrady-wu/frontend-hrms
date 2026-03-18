@@ -108,7 +108,30 @@ export default function PayrollReportsPage() {
       }) + "$"
     );
   }
+  // Get user role from localStorage
+  let userRole = "";
+  const storedUser =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  if (storedUser) {
+    try {
+      const userObj = JSON.parse(storedUser);
+      userRole = userObj.role || userObj.roleName || userObj.permission || "";
+    } catch {}
+  }
 
+  // Only allow admin and hr to view dashboard
+  if (userRole.toLowerCase() !== "admin" && userRole.toLowerCase() !== "hr") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <h1 className="text-2xl font-semibold text-red-600 mb-4">
+          Not Authorized
+        </h1>
+        <p className="text-lg text-gray-600">
+          You do not have access to the dashboard.
+        </p>
+      </div>
+    );
+  }
   // Export to Excel
   const handleExportExcel = () => {
     if (!payrollData.length) return;
@@ -144,9 +167,12 @@ export default function PayrollReportsPage() {
     payrollData.forEach((item) => {
       html += `<tr>`;
       selectedFields.forEach((field) => {
-        const value = ["baseSalary", "bonus", "deduction", "netSalary"].includes(
-          field,
-        )
+        const value = [
+          "baseSalary",
+          "bonus",
+          "deduction",
+          "netSalary",
+        ].includes(field)
           ? formatMoney(item[field])
           : field === "month"
             ? formatMonth(item[field])

@@ -138,7 +138,7 @@ export default function ProfilePage() {
     );
   }
 
-  const emp: any = employee;
+  const emp = employee;
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -243,7 +243,7 @@ export default function ProfilePage() {
               <InfoRow
                 icon={<User className="h-4 w-4" />}
                 label="Head of Department"
-                value={emp.headOfDepartmentName || "—"}
+                value={emp.departmentName || "—"}
               />
               <InfoRow
                 icon={<Briefcase className="h-4 w-4" />}

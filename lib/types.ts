@@ -74,7 +74,7 @@ export type RoleInfo = {
 };
 
 /** User information from API */
-export type UserInfo = {
+export type User = {
   id: number;
   username: string;
   fullName: string;
@@ -87,4 +87,5 @@ export type UserInfo = {
   status: boolean;
   createdAt: string;
   updatedAt: string;
+  permissions?: string | string[];
 };

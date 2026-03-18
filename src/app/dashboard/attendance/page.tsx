@@ -27,6 +27,7 @@ import {
   useDeleteAttendance,
 } from "@/hooks/attendance-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
+import type { EmployeeProfile } from "@/lib/types";
 
 const PAGE_SIZE = 7;
 
@@ -58,7 +59,16 @@ export default function AttendancePage() {
       ? empResponse.data
       : [];
 
-  const attendanceListRaw = Array.isArray(attendance)
+  type Attendance = {
+    id: number;
+    employeeId: number;
+    employeeName?: string;
+    checkIn: string;
+    checkOut?: string;
+    status: string;
+  };
+
+  const attendanceListRaw: Attendance[] = Array.isArray(attendance)
     ? attendance
     : Array.isArray(attendance?.data)
       ? attendance.data
@@ -67,7 +77,7 @@ export default function AttendancePage() {
   // Filter for today's attendance only
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-  const attendanceList = attendanceListRaw.filter((record: any) => {
+  const attendanceList = attendanceListRaw.filter((record: Attendance) => {
     if (!record.checkIn) return false;
     const checkInDate = new Date(record.checkIn);
     const checkInStr = checkInDate.toISOString().split("T")[0];
@@ -75,21 +85,21 @@ export default function AttendancePage() {
   });
 
   const presentCount = attendanceList.filter(
-    (r: any) => r.status === "present" || r.status === "Present",
+    (r: Attendance) => r.status === "present" || r.status === "Present",
   ).length;
   const absentCount = attendanceList.filter(
-    (r: any) => r.status === "absent" || r.status === "Absent",
+    (r: Attendance) => r.status === "absent" || r.status === "Absent",
   ).length;
   const onLeaveCount = attendanceList.filter(
-    (r: any) =>
+    (r: Attendance) =>
       r.status === "leave" || r.status === "Leave" || r.status === "on_leave",
   ).length;
   const lateCount = attendanceList.filter(
-    (r: any) => r.status === "late" || r.status === "Late",
+    (r: Attendance) => r.status === "late" || r.status === "Late",
   ).length;
 
   const [showModal, setShowModal] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [editingRecord, setEditingRecord] = useState<Attendance | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -102,7 +112,7 @@ export default function AttendancePage() {
   const [markAll, setMarkAll] = useState(false);
 
   // Filter attendance
-  const filteredAttendance = attendanceList.filter((record: any) => {
+  const filteredAttendance = attendanceList.filter((record: Attendance) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -135,7 +145,7 @@ export default function AttendancePage() {
     setShowModal(true);
   };
 
-  const openEdit = (record: any) => {
+  const openEdit = (record: Attendance) => {
     setEditingRecord(record);
     const checkInDate = record.checkIn ? new Date(record.checkIn) : null;
     const checkOutDate = record.checkOut ? new Date(record.checkOut) : null;
@@ -162,7 +172,7 @@ export default function AttendancePage() {
 
     if (markAll) {
       // Batch mark attendance for all employees
-      const batch = employees.map((emp: any) => ({
+      const batch = employees.map((emp: EmployeeProfile) => ({
         employeeId: emp.id,
         checkIn,
         checkOut,
@@ -171,14 +181,12 @@ export default function AttendancePage() {
       // Sequential creation
       let createdCount = 0;
       batch.forEach(
-        (
-          payload: {
-            employeeId: number;
-            checkIn: string;
-            checkOut: string;
-            status: string;
-          },
-        ) => {
+        (payload: {
+          employeeId: number;
+          checkIn: string;
+          checkOut: string;
+          status: string;
+        }) => {
           createAttendance(payload, {
             onSuccess: () => {
               createdCount++;
@@ -193,11 +201,14 @@ export default function AttendancePage() {
                 );
               }
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
+              const message =
+                typeof error === "object" && error && "message" in error
+                  ? (error as { message?: string }).message
+                  : undefined;
               Swal.fire(
                 "Error",
-                error?.message ||
-                  "Failed to mark attendance for all employees.",
+                message || "Failed to mark attendance for all employees.",
                 "error",
               );
             },
@@ -224,10 +235,14 @@ export default function AttendancePage() {
                 "success",
               );
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
+              const message =
+                typeof error === "object" && error && "message" in error
+                  ? (error as { message?: string }).message
+                  : undefined;
               Swal.fire(
                 "Error",
-                error?.message || "Failed to update attendance.",
+                message || "Failed to update attendance.",
                 "error",
               );
             },
@@ -240,10 +255,14 @@ export default function AttendancePage() {
             resetForm();
             Swal.fire("Success", "Attendance marked successfully.", "success");
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
+            const message =
+              typeof error === "object" && error && "message" in error
+                ? (error as { message?: string }).message
+                : undefined;
             Swal.fire(
               "Error",
-              error?.message || "Failed to mark attendance.",
+              message || "Failed to mark attendance.",
               "error",
             );
           },
@@ -273,10 +292,14 @@ export default function AttendancePage() {
               "success",
             );
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
+            const message =
+              typeof error === "object" && error && "message" in error
+                ? (error as { message?: string }).message
+                : undefined;
             Swal.fire(
               "Error",
-              error?.message || "Failed to delete attendance record.",
+              message || "Failed to delete attendance record.",
               "error",
             );
           },
@@ -416,7 +439,7 @@ export default function AttendancePage() {
             </TableHeader>
             <TableBody>
               {paginatedAttendance.length > 0 ? (
-                paginatedAttendance.map((record: any) => (
+                paginatedAttendance.map((record: Attendance) => (
                   <TableRow
                     key={record.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/50"
@@ -439,7 +462,7 @@ export default function AttendancePage() {
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
-                        {formatTime(record.checkOut)}
+                        {formatTime(record.checkOut ?? "")}
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap">
@@ -571,7 +594,7 @@ export default function AttendancePage() {
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100 disabled:dark:bg-slate-700/50 disabled:text-slate-400"
                   >
                     <option value="">Select Employee</option>
-                    {employees.map((emp: any) => (
+                    {employees.map((emp: EmployeeProfile) => (
                       <option key={emp.id} value={emp.id}>
                         {emp.fullName || emp.username || `Employee #${emp.id}`}
                       </option>

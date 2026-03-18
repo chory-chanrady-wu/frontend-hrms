@@ -1,8 +1,10 @@
+"use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { getUser, getRoleById } from "@/lib/api";
+import type { User } from "@/lib/types";
 
 type AuthContextType = {
-  user: any;
+  user: User | null;
   permissions: string[];
   loading: boolean;
 };
@@ -10,7 +12,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,14 +31,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (typeof perms === "string") {
             try {
               perms = JSON.parse(perms);
-            } catch (e) {
-              console.error("Failed to parse permissions string:", perms);
+            } catch {
               perms = [];
             }
           }
           setPermissions(Array.isArray(perms) ? perms : []);
         }
-      } catch (err) {
+      } catch {
         setUser(null);
         setPermissions([]);
       } finally {

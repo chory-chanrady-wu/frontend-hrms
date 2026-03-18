@@ -9,6 +9,7 @@ import {
   useUpdateEmployee,
   useUploadEmployeeImage,
 } from "@/hooks/employee-query";
+import type { EmployeeProfile } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetAllDepartments } from "@/hooks/department-query";
 import { useGetAllPositions } from "@/hooks/position-query";
@@ -36,7 +37,7 @@ export default function EditEmployeePage() {
       ? positionsResponse.data
       : [];
 
-  const emp: any = empResponse?.data ?? empResponse;
+  const emp = empResponse?.data ?? empResponse;
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -78,7 +79,21 @@ export default function EditEmployeePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const empData: any = {
+    const empData: {
+      fullName: string;
+      email: string;
+      phoneNumber?: string;
+      departmentId: number;
+      positionId: number;
+      employmentType: string;
+      salary: number;
+      hireDate: string;
+      status: boolean;
+      dateOfBirth?: string;
+      nationality?: string;
+      address?: string;
+      imageUrl?: string;
+    } = {
       fullName: formData.fullName,
       email: formData.email,
       departmentId: Number(formData.departmentId),

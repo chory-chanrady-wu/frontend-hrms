@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRef } from "react";
+import type { User } from "@/lib/types";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -30,7 +32,9 @@ export default function EditDepartmentPage() {
     headOfDepartmentId: "",
   });
 
+  const initialized = useRef(false);
   useEffect(() => {
+    if (initialized.current) return;
     const dept = Array.isArray(response)
       ? response[0]
       : response?.data || response;
@@ -42,6 +46,7 @@ export default function EditDepartmentPage() {
           ? String(dept.headOfDepartmentId)
           : "",
       });
+      initialized.current = true;
     }
   }, [response]);
 
@@ -155,7 +160,7 @@ export default function EditDepartmentPage() {
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
                 >
                   <option value="">Select Head of Department (optional)</option>
-                  {userList.map((user: any) => (
+                  {userList.map((user: User) => (
                     <option key={user.id} value={user.id}>
                       {user.fullName || user.username} — {user.email}
                     </option>
