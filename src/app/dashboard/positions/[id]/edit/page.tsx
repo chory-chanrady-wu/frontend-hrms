@@ -14,11 +14,16 @@ export default function EditPositionPage() {
   const { data: departmentsResponse } = useGetAllDepartments();
 
   const position = positionResponse?.data || positionResponse;
-  const departments = Array.isArray(departmentsResponse)
+  const departmentsRaw = Array.isArray(departmentsResponse)
     ? departmentsResponse
     : Array.isArray(departmentsResponse?.data)
       ? departmentsResponse.data
       : [];
+  // Deduplicate departments by id
+  const departments = departmentsRaw.filter(
+    (dept: { id: number }, idx: number, arr: { id: number }[]) =>
+      arr.findIndex((d: { id: number }) => d.id === dept.id) === idx,
+  );
 
   const [formData, setFormData] = useState({
     positionName: "",
@@ -74,7 +79,7 @@ export default function EditPositionPage() {
           });
           router.push("/dashboard/positions");
         },
-        onError: async (err) => {
+        onError: async (err: Error) => {
           await themedSwal({
             title: "Error",
             text: err?.message || "Failed to update position.",

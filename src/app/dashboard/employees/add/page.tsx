@@ -140,10 +140,20 @@ export default function AddEmployeePage() {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    // If department changes, reset positionId
+    if (name === "departmentId") {
+      setFormData({
+        ...formData,
+        departmentId: value,
+        positionId: "",
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,20 +198,6 @@ export default function AddEmployeePage() {
                   required
                   className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="e.g. john.doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="e.g. John Doe"
                 />
               </div>
               <div>
@@ -285,11 +281,18 @@ export default function AddEmployeePage() {
                   className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 >
                   <option value="">Select Position</option>
-                  {positions.map((pos: any) => (
-                    <option key={pos.id} value={pos.id}>
-                      {pos.positionName || pos.name}
-                    </option>
-                  ))}
+                  {formData.departmentId &&
+                    positions
+                      .filter(
+                        (pos: any) =>
+                          String(pos.departmentId) ===
+                          String(formData.departmentId),
+                      )
+                      .map((pos: any) => (
+                        <option key={pos.id} value={pos.id}>
+                          {pos.positionName || pos.name}
+                        </option>
+                      ))}
                 </select>
               </div>
               <div>
