@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
   Table,
@@ -28,6 +28,8 @@ import {
 } from "@/hooks/attendance-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
 import type { EmployeeProfile } from "@/lib/types";
+import { getUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 
 const PAGE_SIZE = 7;
 
@@ -58,6 +60,37 @@ export default function AttendancePage() {
     : Array.isArray(empResponse?.data)
       ? empResponse.data
       : [];
+
+  // Get current user and permissions
+  let currentUser = null;
+  let isAdminOrPerm = false;
+  let defaultEmployeeId = "";
+  if (typeof window !== "undefined") {
+    currentUser = getUser();
+    const perms = currentUser?.permissions
+      ? Array.isArray(currentUser.permissions)
+        ? currentUser.permissions
+        : typeof currentUser.permissions === "string"
+          ? currentUser.permissions.split(",")
+          : []
+      : [];
+    isAdminOrPerm =
+      currentUser?.roleName?.toLowerCase() === "admin" ||
+      currentUser?.roleName?.toLowerCase() === "hr" ||
+      perms.includes("admin") ||
+      perms.includes("attendance:manage") ||
+      perms.includes("attendance:all");
+  }
+
+  // For non-admins, find the employee whose userId matches currentUser.id
+  if (!isAdminOrPerm && currentUser && employees.length > 0) {
+    const matchedEmp = employees.find(
+      (emp: EmployeeProfile) => emp.userId === currentUser.id,
+    );
+    if (matchedEmp) {
+      defaultEmployeeId = String(matchedEmp.id);
+    }
+  }
 
   type Attendance = {
     id: number;
@@ -103,12 +136,25 @@ export default function AttendancePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
-    employeeId: "",
+    employeeId: !isAdminOrPerm && defaultEmployeeId ? defaultEmployeeId : "",
     date: new Date().toISOString().split("T")[0],
     status: "present",
     checkIn: "",
     checkOut: "",
   });
+
+  // Update employeeId if employees load after initial render
+  useEffect(() => {
+    if (!isAdminOrPerm && currentUser && employees.length > 0) {
+      const matchedEmp = employees.find(
+        (emp: EmployeeProfile) => emp.userId === currentUser.id,
+      );
+      if (matchedEmp && formData.employeeId !== String(matchedEmp.id)) {
+        setFormData((prev) => ({ ...prev, employeeId: String(matchedEmp.id) }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employees]);
   const [markAll, setMarkAll] = useState(false);
 
   // Filter attendance
@@ -131,7 +177,7 @@ export default function AttendancePage() {
 
   const resetForm = () => {
     setFormData({
-      employeeId: "",
+      employeeId: !isAdminOrPerm && defaultEmployeeId ? defaultEmployeeId : "",
       date: new Date().toISOString().split("T")[0],
       status: "present",
       checkIn: "",
@@ -582,27 +628,45 @@ export default function AttendancePage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Employee *
                 </label>
-                {/* Always show employee dropdown when editing, or when creating and not markAll */}
-                {(!markAll || editingRecord) && (
-                  <select
-                    value={formData.employeeId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, employeeId: e.target.value })
-                    }
-                    required
-                    disabled={!!editingRecord}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100 disabled:dark:bg-slate-700/50 disabled:text-slate-400"
-                  >
-                    <option value="">Select Employee</option>
-                    {employees.map((emp: EmployeeProfile) => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.fullName || emp.username || `Employee #${emp.id}`}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {/* Only show mark all toggle and info when creating */}
-                {editingRecord == null && (
+                {/* Only admin/permission can select employee. Others see their own name, dropdown disabled. */}
+                {(!markAll || editingRecord) &&
+                  (isAdminOrPerm ? (
+                    <select
+                      value={formData.employeeId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, employeeId: e.target.value })
+                      }
+                      required
+                      disabled={!!editingRecord}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100 disabled:dark:bg-slate-700/50 disabled:text-slate-400"
+                    >
+                      <option value="">Select Employee</option>
+                      {employees.map((emp: EmployeeProfile) => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.fullName ||
+                            emp.username ||
+                            `Employee #${emp.id}`}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={
+                        employees.find(
+                          (emp: EmployeeProfile) =>
+                            String(emp.id) === formData.employeeId,
+                        )?.fullName ||
+                        currentUser?.fullName ||
+                        currentUser?.username ||
+                        "Me"
+                      }
+                      disabled
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-slate-900 dark:text-slate-100"
+                    />
+                  ))}
+                {/* Only show mark all toggle for admin/permission */}
+                {editingRecord == null && isAdminOrPerm && (
                   <>
                     <button
                       type="button"
