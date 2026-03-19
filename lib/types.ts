@@ -34,6 +34,8 @@ export type EmployeeProfile = {
   userStatus: string;
   departmentId: number;
   departmentName: string;
+  headOfDepartment: string;
+  headOfDepartmentId?: number;
   positionId: number;
   positionName: string;
   employmentType: string;
