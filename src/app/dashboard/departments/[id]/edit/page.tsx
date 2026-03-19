@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { useRef } from "react";
 import type { User } from "@/lib/types";
@@ -65,7 +66,21 @@ export default function EditDepartmentPage() {
       },
       {
         onSuccess: () => {
-          router.push("/dashboard/departments");
+          const isDark =
+            typeof window !== "undefined" &&
+            document.documentElement.classList.contains("dark");
+          Swal.fire({
+            title: "Success!",
+            text: "Department updated successfully.",
+            icon: "success",
+            background: isDark ? "#1e293b" : "#fff",
+            color: isDark ? "#f1f5f9" : "#1e293b",
+            customClass: {
+              popup: isDark ? "swal2-dark" : "",
+            },
+          }).then(() => {
+            router.push("/dashboard/departments");
+          });
         },
       },
     );

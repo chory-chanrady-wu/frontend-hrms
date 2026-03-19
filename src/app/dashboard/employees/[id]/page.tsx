@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useParams, useRouter } from "next/navigation";
 import { useGetEmployeeById, useDeleteEmployee } from "@/hooks/employee-query";
 import {
@@ -29,9 +30,41 @@ export default function EmployeeDetailPage() {
   const { mutate: deleteEmployee, isPending: isDeleting } = useDeleteEmployee();
 
   const handleDelete = () => {
-    if (!confirm("Are you sure you want to delete this employee?")) return;
-    deleteEmployee(employeeId, {
-      onSuccess: () => router.push("/dashboard/employees"),
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this employee?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: isDark ? "#ef4444" : "#d33",
+      cancelButtonColor: isDark ? "#2563eb" : "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      background: isDark ? "#1e293b" : "#fff",
+      color: isDark ? "#f1f5f9" : "#1e293b",
+      customClass: {
+        popup: isDark ? "swal2-dark" : "",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteEmployee(employeeId, {
+          onSuccess: () => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Employee has been deleted.",
+              icon: "success",
+              background: isDark ? "#1e293b" : "#fff",
+              color: isDark ? "#f1f5f9" : "#1e293b",
+              customClass: {
+                popup: isDark ? "swal2-dark" : "",
+              },
+            }).then(() => {
+              router.push("/dashboard/employees");
+            });
+          },
+        });
+      }
     });
   };
 
@@ -319,7 +352,7 @@ function InfoRow({
       <div className="text-slate-400 dark:text-slate-500 mt-0.5">{icon}</div>
       <div>
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 capitalize">
+        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
           {value}
         </p>
       </div>

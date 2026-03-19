@@ -289,8 +289,11 @@ export const positionsApi = {
   createPosition: async (posData: {
     positionName: string;
     description: string;
-    department: number;
-    salary: number;
+    department?: number;
+    departmentId?: number;
+    salary?: number;
+    headOfDepartmentId?: number;
+    headOfDepartmentName?: string;
   }) => {
     const response = await fetch(`${API_BASE_URL}/positions`, {
       method: "POST",

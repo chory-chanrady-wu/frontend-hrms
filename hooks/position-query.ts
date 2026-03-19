@@ -14,7 +14,9 @@ export const useGetAllPositions = () => {
   return useQuery({
     queryKey: POS_KEYS.lists(),
     queryFn: () => positionsApi.getAllPositions(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -22,7 +24,9 @@ export const useGetPositionById = (id: number) => {
   return useQuery({
     queryKey: POS_KEYS.detail(id),
     queryFn: () => positionsApi.getPositionById(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 };
@@ -31,7 +35,9 @@ export const useGetPositionsByDepartment = (departmentId: number) => {
   return useQuery({
     queryKey: POS_KEYS.byDept(departmentId),
     queryFn: () => positionsApi.getPositionsByDepartment(departmentId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!departmentId,
   });
 };

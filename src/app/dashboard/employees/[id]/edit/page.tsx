@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Loader2, Upload } from "lucide-react";
@@ -119,7 +120,22 @@ export default function EditEmployeePage() {
           if (imageFile) {
             uploadImage({ id: employeeId, file: imageFile });
           }
-          router.push(`/dashboard/employees/${employeeId}`);
+          // Show SweetAlert success and redirect after user closes it
+          const isDark =
+            typeof window !== "undefined" &&
+            document.documentElement.classList.contains("dark");
+          Swal.fire({
+            title: "Success!",
+            text: "Employee updated successfully.",
+            icon: "success",
+            background: isDark ? "#1e293b" : "#fff",
+            color: isDark ? "#f1f5f9" : "#1e293b",
+            customClass: {
+              popup: isDark ? "swal2-dark" : "",
+            },
+          }).then(() => {
+            router.push(`/dashboard/employees/${employeeId}`);
+          });
         },
         onError: (err) => alert("Failed to update: " + (err as Error).message),
       },

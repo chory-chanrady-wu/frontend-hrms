@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -28,11 +29,42 @@ export default function DepartmentDetailPage() {
     useDeleteDepartment();
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this department?")) {
-      deleteDepartment(departmentId, {
-        onSuccess: () => router.push("/dashboard/departments"),
-      });
-    }
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Are you sure you want to delete this department?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: isDark ? "#ef4444" : "#d33",
+      cancelButtonColor: isDark ? "#2563eb" : "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      background: isDark ? "#1e293b" : "#fff",
+      color: isDark ? "#f1f5f9" : "#1e293b",
+      customClass: {
+        popup: isDark ? "swal2-dark" : "",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteDepartment(departmentId, {
+          onSuccess: () => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Department has been deleted.",
+              icon: "success",
+              background: isDark ? "#1e293b" : "#fff",
+              color: isDark ? "#f1f5f9" : "#1e293b",
+              customClass: {
+                popup: isDark ? "swal2-dark" : "",
+              },
+            }).then(() => {
+              router.push("/dashboard/departments");
+            });
+          },
+        });
+      }
+    });
   };
 
   const dept = Array.isArray(response)

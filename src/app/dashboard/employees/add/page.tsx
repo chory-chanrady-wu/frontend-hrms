@@ -8,12 +8,14 @@ import Link from "next/link";
 import { useCreateEmployee } from "@/hooks/employee-query";
 import { useGetAllDepartments } from "@/hooks/department-query";
 import { useGetAllPositions } from "@/hooks/position-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AddEmployeePage() {
   const router = useRouter();
   const { mutate: createEmployee, isPending } = useCreateEmployee();
   const { data: deptResponse } = useGetAllDepartments();
   const { data: positionsResponse } = useGetAllPositions();
+  const queryClient = useQueryClient();
 
   const departments = Array.isArray(deptResponse)
     ? deptResponse
@@ -65,13 +67,48 @@ export default function AddEmployeePage() {
     if (imageFile) fd.append("image", imageFile);
 
     createEmployee(fd, {
-      onSuccess: () => router.push("/dashboard/employees"),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        const isDark =
+          typeof window !== "undefined" &&
+          document.documentElement.classList.contains("dark");
+        Swal.fire({
+          title: "Success!",
+          text: "Employee created successfully.",
+          icon: "success",
+          background: isDark ? "#1e293b" : "#fff",
+          color: isDark ? "#f1f5f9" : "#1e293b",
+          customClass: {
+            popup: isDark ? "swal2-dark" : "",
+          },
+        }).then(() => {
+          router.push("/dashboard/employees");
+          router.refresh();
+        });
+      },
       onError: (err) =>
-        Swal.fire(
-          "Error",
-          "Failed to create: " + (err as Error).message,
-          "error",
-        ),
+        Swal.fire({
+          title: "Error",
+          text: "Failed to create: " + (err as Error).message,
+          icon: "error",
+          background:
+            typeof window !== "undefined" &&
+            document.documentElement.classList.contains("dark")
+              ? "#1e293b"
+              : "#fff",
+          color:
+            typeof window !== "undefined" &&
+            document.documentElement.classList.contains("dark")
+              ? "#f1f5f9"
+              : "#1e293b",
+          customClass: {
+            popup:
+              typeof window !== "undefined" &&
+              document.documentElement.classList.contains("dark")
+                ? "swal2-dark"
+                : "",
+          },
+        }),
     });
   };
   // Get user role from localStorage

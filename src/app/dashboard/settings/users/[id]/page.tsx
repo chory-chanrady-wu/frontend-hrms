@@ -25,34 +25,6 @@ export default function UserDetailPage() {
 
   const user = userResponse?.data ?? userResponse;
 
-  const handleDelete = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Are you sure you want to delete this user?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteUser(userId, {
-          onSuccess: () => {
-            Swal.fire("Deleted!", "User has been deleted.", "success");
-            router.push("/dashboard/settings/users");
-          },
-          onError: (error: any) => {
-            Swal.fire(
-              "Error",
-              error?.message || "Failed to delete user.",
-              "error",
-            );
-          },
-        });
-      }
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -96,18 +68,6 @@ export default function UserDetailPage() {
           >
             <Pencil className="h-4 w-4" /> Edit
           </Link>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm font-medium disabled:opacity-50"
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-            Delete
-          </button>
         </div>
       </div>
 
@@ -172,7 +132,7 @@ export default function UserDetailPage() {
                   User ID
                 </p>
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {user.id}
+                  EMP-{user.id}
                 </p>
               </div>
             </div>

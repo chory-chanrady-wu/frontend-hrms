@@ -86,12 +86,20 @@ export default function DepartmentsPage() {
   );
 
   const handleDelete = (id: number) => {
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
     if ((employeeCountByDept[id] || 0) > 0) {
-      Swal.fire(
-        "Error",
-        "Cannot delete this department. It still has employees assigned to it.",
-        "error",
-      );
+      Swal.fire({
+        title: "Error",
+        text: "Cannot delete this department. It still has employees assigned to it.",
+        icon: "error",
+        background: isDark ? "#1e293b" : "#fff",
+        color: isDark ? "#f1f5f9" : "#1e293b",
+        customClass: {
+          popup: isDark ? "swal2-dark" : "",
+        },
+      });
       return;
     }
     Swal.fire({
@@ -99,21 +107,40 @@ export default function DepartmentsPage() {
       text: "Are you sure you want to delete this department?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: isDark ? "#ef4444" : "#d33",
+      cancelButtonColor: isDark ? "#2563eb" : "#3085d6",
       confirmButtonText: "Yes, delete it!",
+      background: isDark ? "#1e293b" : "#fff",
+      color: isDark ? "#f1f5f9" : "#1e293b",
+      customClass: {
+        popup: isDark ? "swal2-dark" : "",
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         deleteDepartment(id, {
           onSuccess: () => {
-            Swal.fire("Deleted!", "Department has been deleted.", "success");
+            Swal.fire({
+              title: "Deleted!",
+              text: "Department has been deleted.",
+              icon: "success",
+              background: isDark ? "#1e293b" : "#fff",
+              color: isDark ? "#f1f5f9" : "#1e293b",
+              customClass: {
+                popup: isDark ? "swal2-dark" : "",
+              },
+            });
           },
           onError: (error: any) => {
-            Swal.fire(
-              "Error",
-              error?.message || "Failed to delete department.",
-              "error",
-            );
+            Swal.fire({
+              title: "Error",
+              text: error?.message || "Failed to delete department.",
+              icon: "error",
+              background: isDark ? "#1e293b" : "#fff",
+              color: isDark ? "#f1f5f9" : "#1e293b",
+              customClass: {
+                popup: isDark ? "swal2-dark" : "",
+              },
+            });
           },
         });
       }

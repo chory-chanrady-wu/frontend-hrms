@@ -62,6 +62,12 @@ export const navSections = [
         icon: Building2,
         permission: "departments:read",
       },
+      {
+        label: "Position",
+        href: "/dashboard/positions",
+        icon: Building2,
+        permission: "positions:read",
+      },
     ],
   },
   {
@@ -166,6 +172,7 @@ export const hrAllowed = [
   "/dashboard/payroll",
   "/dashboard/employees",
   "/dashboard/departments",
+  "/dashboard/positions",
   "/dashboard/recruitment",
   "/dashboard/recruitment/candidates",
   "/dashboard/recruitment/interviews",

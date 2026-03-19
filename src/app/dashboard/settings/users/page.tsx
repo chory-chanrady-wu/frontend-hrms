@@ -2,18 +2,20 @@
 
 import Swal from "sweetalert2";
 import { useState } from "react";
-import { Mail, Shield, Edit, Trash2, Loader2 } from "lucide-react";
+import { Mail, Shield, Edit, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGetAllUsers, useDeleteUser } from "@/hooks/user-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { User } from "@/lib/types";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 
 export default function UsersPage() {
   const router = useRouter();
   const { data: usersResponse, isLoading, isError } = useGetAllUsers();
   const deleteUser = useDeleteUser();
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
 
   const users: User[] = Array.isArray(usersResponse)
@@ -41,6 +43,7 @@ export default function UsersPage() {
       if (result.isConfirmed) {
         deleteUser.mutate(id, {
           onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
             Swal.fire("Deleted!", "User has been deleted.", "success");
           },
           onError: (error: any) => {
@@ -190,13 +193,6 @@ export default function UsersPage() {
                       >
                         <Edit className="h-4 w-4" />
                       </Link>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        disabled={deleteUser.isPending}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
                     </div>
                   </td>
                 </tr>

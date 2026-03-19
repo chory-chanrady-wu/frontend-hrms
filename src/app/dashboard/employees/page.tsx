@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGetAllEmployees, useDeleteEmployee } from "@/hooks/employee-query";
+import { useDeleteUser } from "@/hooks/user-query";
 import { useState } from "react";
 import type { EmployeeProfile } from "@/lib/types";
 
@@ -21,6 +22,7 @@ const PAGE_SIZE = 6;
 export default function EmployeesPage() {
   const { data: employeesResponse, isLoading, error } = useGetAllEmployees();
   const { mutate: deleteEmployee } = useDeleteEmployee();
+  const { mutate: deleteUser } = useDeleteUser();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
@@ -52,7 +54,11 @@ export default function EmployeesPage() {
   }
 
   // Only allow admin and hr to view dashboard
-  if (userRole.toLowerCase() !== "admin" && userRole.toLowerCase() !== "hr" && userRole.toLowerCase() !== "manager") {
+  if (
+    userRole.toLowerCase() !== "admin" &&
+    userRole.toLowerCase() !== "hr" &&
+    userRole.toLowerCase() !== "manager"
+  ) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
         <h1 className="text-2xl font-semibold text-red-600 mb-4">
@@ -89,26 +95,84 @@ export default function EmployeesPage() {
   const inactiveCount = employeeList.filter((e) => e.status === false).length;
 
   const handleDelete = (id: number) => {
+    // Find the employee to get the userId
+    const employee = employeeList.find((e) => e.id === id);
+    const userId = employee?.userId;
+    // Detect dark mode (using Tailwind's 'dark' class on <html> or <body>)
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
     Swal.fire({
       title: "Are you sure?",
       text: "Are you sure you want to delete this employee?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: isDark ? "#ef4444" : "#d33",
+      cancelButtonColor: isDark ? "#2563eb" : "#3085d6",
       confirmButtonText: "Yes, delete it!",
+      background: isDark ? "#1e293b" : "#fff",
+      color: isDark ? "#f1f5f9" : "#1e293b",
+      customClass: {
+        popup: isDark ? "swal2-dark" : "",
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         deleteEmployee(id, {
           onSuccess: () => {
-            Swal.fire("Deleted!", "Employee has been deleted.", "success");
+            // Delete the associated user if userId exists
+            if (userId) {
+              deleteUser(userId, {
+                onSuccess: () => {
+                  Swal.fire({
+                    title: "Deleted!",
+                    text: "Employee and user have been deleted.",
+                    icon: "success",
+                    background: isDark ? "#1e293b" : "#fff",
+                    color: isDark ? "#f1f5f9" : "#1e293b",
+                    customClass: {
+                      popup: isDark ? "swal2-dark" : "",
+                    },
+                  });
+                },
+                onError: (error: any) => {
+                  Swal.fire({
+                    title: "Error",
+                    text:
+                      "Employee deleted but failed to delete user: " +
+                      (error?.message || "Unknown error."),
+                    icon: "error",
+                    background: isDark ? "#1e293b" : "#fff",
+                    color: isDark ? "#f1f5f9" : "#1e293b",
+                    customClass: {
+                      popup: isDark ? "swal2-dark" : "",
+                    },
+                  });
+                },
+              });
+            } else {
+              Swal.fire({
+                title: "Deleted!",
+                text: "Employee has been deleted.",
+                icon: "success",
+                background: isDark ? "#1e293b" : "#fff",
+                color: isDark ? "#f1f5f9" : "#1e293b",
+                customClass: {
+                  popup: isDark ? "swal2-dark" : "",
+                },
+              });
+            }
           },
           onError: (error: any) => {
-            Swal.fire(
-              "Error",
-              error?.message || "Failed to delete employee.",
-              "error",
-            );
+            Swal.fire({
+              title: "Error",
+              text: error?.message || "Failed to delete employee.",
+              icon: "error",
+              background: isDark ? "#1e293b" : "#fff",
+              color: isDark ? "#f1f5f9" : "#1e293b",
+              customClass: {
+                popup: isDark ? "swal2-dark" : "",
+              },
+            });
           },
         });
       }
