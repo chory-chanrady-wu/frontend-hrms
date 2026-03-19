@@ -243,7 +243,7 @@ export default function ProfilePage() {
               <InfoRow
                 icon={<User className="h-4 w-4" />}
                 label="Head of Department"
-                value={emp.headOfDepartment || "—"}
+                value={emp.headOfDepartmentName || "—"}
               />
               <InfoRow
                 icon={<Briefcase className="h-4 w-4" />}
