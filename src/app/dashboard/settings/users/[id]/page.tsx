@@ -24,6 +24,7 @@ export default function UserDetailPage() {
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
 
   const user = userResponse?.data ?? userResponse;
+  console.log("User object:", user); // Debug line
 
   if (isLoading) {
     return (

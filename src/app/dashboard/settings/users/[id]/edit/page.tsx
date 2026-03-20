@@ -33,6 +33,7 @@ export default function EditUserPage() {
 
   useEffect(() => {
     if (user) {
+      console.log("User object:", user); // Debug line
       setFormData({
         username: user.username || "",
         fullName: user.fullName || "",

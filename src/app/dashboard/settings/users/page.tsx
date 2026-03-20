@@ -8,6 +8,14 @@ import { useRouter } from "next/navigation";
 import { useGetAllUsers, useDeleteUser } from "@/hooks/user-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { User } from "@/lib/types";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 
 const PAGE_SIZE = 9;
 
@@ -29,34 +37,6 @@ export default function UsersPage() {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-
-  const handleDelete = (id: number) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Are you sure you want to delete this user?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteUser.mutate(id, {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            Swal.fire("Deleted!", "User has been deleted.", "success");
-          },
-          onError: (error: any) => {
-            Swal.fire(
-              "Error",
-              error?.message || "Failed to delete user.",
-              "error",
-            );
-          },
-        });
-      }
-    });
-  };
 
   if (isLoading) {
     return (
@@ -82,51 +62,39 @@ export default function UsersPage() {
         </h1>
       </div>
 
-      {/* Users Table */}
+      {/* Users Table (shadcn/ui) */}
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden dark:bg-slate-800 dark:border-slate-700">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200 dark:bg-slate-700 dark:border-slate-600">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                User
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                Created At
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-300">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {users.length === 0 ? (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={6}
                   className="px-6 py-8 text-center text-sm text-slate-500"
                 >
                   No users found.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               paginatedUsers.map((user) => (
-                <tr
+                <TableRow
                   key={user.id}
                   onClick={() =>
                     router.push(`/dashboard/settings/users/${user.id}`)
                   }
                   className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <TableCell>
                     <div className="flex items-center gap-3">
                       {user.imageUrl ? (
                         <img
@@ -153,20 +121,20 @@ export default function UsersPage() {
                         </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <Mail className="h-4 w-4" />
                       {user.email}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <Shield className="h-4 w-4" />
                       {user.roleName}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         user.status === false
@@ -176,15 +144,15 @@ export default function UsersPage() {
                     >
                       {user.status ? "Active" : "Inactive"}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
                     <div className="text-sm text-slate-600 dark:text-slate-300">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  </TableCell>
+                  <TableCell className="text-center">
                     <div
-                      className="flex justify-end gap-2"
+                      className="flex justify-center gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Link
@@ -194,12 +162,12 @@ export default function UsersPage() {
                         <Edit className="h-4 w-4" />
                       </Link>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination */}

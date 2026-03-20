@@ -1,10 +1,9 @@
 "use client";
 
-import { DollarSign, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useGetAllPayroll } from "@/hooks/payroll-query";
 import { useGetAllEmployees } from "@/hooks/employee-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -44,11 +43,33 @@ export default function PayrollPage() {
   // Year-based pagination
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  // Get current user employeeId
-  let currentEmployeeId = "";
-  if (typeof window !== "undefined") {
-    currentEmployeeId = localStorage.getItem("employeeId") || "";
-  }
+  // Get current user employeeId (reactive)
+  const [currentEmployeeId, setCurrentEmployeeId] = useState("");
+  // Read from localStorage on client only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Try both keys: 'employeeId' and from user object
+      let empId = localStorage.getItem("employeeId");
+      if (!empId) {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          try {
+            const userObj = JSON.parse(storedUser);
+            if (userObj && userObj.employeeId) {
+              empId = String(userObj.employeeId);
+            }
+          } catch {}
+        }
+      }
+      setCurrentEmployeeId(empId || "");
+      // Debug log: show current employeeId from localStorage
+      // eslint-disable-next-line no-console
+      console.log(
+        "[Payroll Debug] currentEmployeeId from localStorage:",
+        empId,
+      );
+    }
+  }, []);
   const { data: payroll, isLoading, error } = useGetAllPayroll();
   const { data: employeesResponse } = useGetAllEmployees();
 
@@ -67,11 +88,20 @@ export default function PayrollPage() {
     : Array.isArray(payroll?.data)
       ? payroll.data
       : [];
+  // Debug log: show all payroll records
+  // eslint-disable-next-line no-console
+  console.log("[Payroll Debug] payrollList:", payrollList);
 
-  // Filter payroll for current user
-  const filteredPayroll = payrollList.filter(
-    (r) => String(r.employeeId) === currentEmployeeId,
-  );
+  // Filter payroll for current user unless admin
+  const isAdmin = userRole.toLowerCase() === "admin";
+  const filteredPayroll = isAdmin
+    ? payrollList
+    : payrollList.filter(
+        (r) => String(r.employeeId) === String(currentEmployeeId),
+      );
+  // Debug log: show filtered payroll for current user
+  // eslint-disable-next-line no-console
+  console.log("[Payroll Debug] filteredPayroll:", filteredPayroll);
 
   // Sort by year and month descending
   const sortedPayroll = [...filteredPayroll].sort((a, b) => {
@@ -126,49 +156,6 @@ export default function PayrollPage() {
             Generate Payroll
           </Link>
         )}
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-4 mb-6">
-        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                Total Payroll
-              </p>
-              <p className="text-3xl font-bold text-blue-900 dark:text-blue-200 mt-2">
-                ${totalNetSalary.toLocaleString()}
-              </p>
-            </div>
-            <DollarSign className="h-12 w-12 text-blue-600 dark:text-blue-400 opacity-20" />
-          </div>
-        </div>
-        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                Avg Salary
-              </p>
-              <p className="text-3xl font-bold text-green-900 dark:text-green-200 mt-2">
-                ${avgSalary.toLocaleString()}
-              </p>
-            </div>
-            <DollarSign className="h-12 w-12 text-green-600 dark:text-green-400 opacity-20" />
-          </div>
-        </div>
-        <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
-                Records
-              </p>
-              <p className="text-3xl font-bold text-orange-900 dark:text-orange-200 mt-2">
-                {filteredPayroll.length}
-              </p>
-            </div>
-            <Calendar className="h-12 w-12 text-orange-600 dark:text-orange-400 opacity-20" />
-          </div>
-        </div>
       </div>
 
       {/* Payroll Records */}
@@ -268,7 +255,9 @@ export default function PayrollPage() {
                     colSpan={6}
                     className="text-center text-slate-500 dark:text-slate-400"
                   >
-                    No payroll records found
+                    {isAdmin
+                      ? "No payroll records found"
+                      : "You have no payroll records yet"}
                   </TableCell>
                 </TableRow>
               )}
