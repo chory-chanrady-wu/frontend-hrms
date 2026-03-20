@@ -35,11 +35,29 @@ export default function LeavePage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [permission, setPermission] = useState<string>("");
+  const [roleName, setRoleName] = useState<string>("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const userId = localStorage.getItem("employeeId") || "";
+      // Try to get user object from localStorage
+      let userId = "";
+      let role = "";
+      try {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          if (userObj && userObj.employeeId) {
+            userId = String(userObj.employeeId);
+          }
+          if (userObj && userObj.roleName) {
+            role = String(userObj.roleName);
+          }
+        }
+      } catch (e) {
+        // fallback: do nothing
+      }
       setCurrentUserId(userId);
+      setRoleName(role);
       const perm = localStorage.getItem("permission") || "";
       setPermission(perm);
     }
@@ -51,10 +69,8 @@ export default function LeavePage() {
       ? leaveResponse.data
       : [];
 
-  // Filter leave requests for current user
-  const leaveRequests = leaveRequestsRaw.filter(
-    (l: any) => String(l.employeeId) === currentUserId,
-  );
+  // Show all leave requests (no filter by employeeId)
+  const leaveRequests = leaveRequestsRaw;
 
   const totalRequests = leaveRequests.length;
   const approvedCount = leaveRequests.filter(
@@ -170,7 +186,9 @@ export default function LeavePage() {
                 <TableHead>Days</TableHead>
                 <TableHead>Reason</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+                {roleName && roleName.trim().toLowerCase() === "admin" && (
+                  <TableHead>Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -215,26 +233,31 @@ export default function LeavePage() {
                         {request.status}
                       </span>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-right">
-                      <button
-                        onClick={async () => {
-                          const result = await Swal.fire({
-                            title: "Are you sure?",
-                            text: "Are you sure you want to delete this leave request?",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#d33",
-                            cancelButtonColor: "#3085d6",
-                            confirmButtonText: "Yes, delete it!",
-                          });
-                          if (result.isConfirmed) {
-                            deleteLeaveRequest(request.id);
-                          }
-                        }}
-                        className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                    <TableCell className="whitespace-nowrap text-right flex gap-2 justify-center items-center">
+                      {roleName &&
+                        roleName.trim().toLowerCase() === "admin" && (
+                          <>
+                            <button
+                              onClick={async () => {
+                                const result = await Swal.fire({
+                                  title: "Are you sure?",
+                                  text: "Are you sure you want to delete this leave request?",
+                                  icon: "warning",
+                                  showCancelButton: true,
+                                  confirmButtonColor: "#d33",
+                                  cancelButtonColor: "#3085d6",
+                                  confirmButtonText: "Yes, delete it!",
+                                });
+                                if (result.isConfirmed) {
+                                  deleteLeaveRequest(request.id);
+                                }
+                              }}
+                              className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))
