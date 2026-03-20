@@ -74,14 +74,14 @@ export default function Header() {
   const employees = (() => {
     const raw = allEmployeesResponse?.data ?? allEmployeesResponse;
     const arr = Array.isArray(raw) ? (raw as EmployeeProfile[]) : [];
-    console.log("employees array", arr);
+    // console.log("employees array", arr);
     return arr;
   })();
 
   const currentEmployee = (() => {
-    console.log("employeeId", employeeId);
-    console.log("username", username);
-    console.log("userResponse", userResponse);
+    // console.log("employeeId", employeeId);
+    // console.log("username", username);
+    // console.log("userResponse", userResponse);
     if (employeeId) {
       return employees.find((e) => e.id === employeeId) ?? null;
     }
@@ -98,7 +98,7 @@ export default function Header() {
 
   const avatarName = currentEmployee?.fullName || displayName;
   // Debug log to inspect currentEmployee and its fields
-  console.log("currentEmployee", currentEmployee);
+  // console.log("currentEmployee", currentEmployee);
   const avatarRole =
     currentEmployee?.positionName || currentEmployee?.departmentName || "";
   useEffect(() => {
