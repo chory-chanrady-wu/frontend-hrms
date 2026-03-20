@@ -62,15 +62,13 @@ export default function AddPositionPage() {
           const isDark =
             typeof window !== "undefined" &&
             (document.documentElement.classList.contains("dark") ||
-              window.matchMedia("(prefers-color-scheme: dark)").matches);
+              document.body.classList.contains("dark"));
           Swal.fire({
             title: "Success!",
             text: "Position created successfully.",
             icon: "success",
-            background: isDark ? "#1e293b" : "#fff",
-            color: isDark ? "#f1f5f9" : "#1e293b",
             customClass: {
-              popup: isDark ? "swal2-dark" : "",
+              popup: isDark ? "swal2-popup swal2-dark" : "swal2-popup",
             },
           }).then(() => {
             router.push("/dashboard/positions");
@@ -81,15 +79,13 @@ export default function AddPositionPage() {
           const isDark =
             typeof window !== "undefined" &&
             (document.documentElement.classList.contains("dark") ||
-              window.matchMedia("(prefers-color-scheme: dark)").matches);
+              document.body.classList.contains("dark"));
           Swal.fire({
             title: "Error",
             text: "Failed to create position.",
             icon: "error",
-            background: isDark ? "#1e293b" : "#fff",
-            color: isDark ? "#f1f5f9" : "#1e293b",
             customClass: {
-              popup: isDark ? "swal2-dark" : "",
+              popup: isDark ? "swal2-popup swal2-dark" : "swal2-popup",
             },
           });
         },

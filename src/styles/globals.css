@@ -1,3 +1,16 @@
+/* Custom SweetAlert2 dark mode styles */
+.swal2-popup.swal2-dark {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+.swal2-popup.swal2-dark .swal2-title,
+.swal2-popup.swal2-dark .swal2-html-container {
+  color: #f1f5f9 !important;
+}
+.swal2-popup.swal2-dark .swal2-confirm {
+  background: #2563eb !important;
+  color: #fff !important;
+}
 /* SweetAlert2 theme for dark/light mode */
 .swal2-popup-theme {
   background-color: #fff;
