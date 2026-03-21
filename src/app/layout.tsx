@@ -3,10 +3,10 @@ import { Providers } from "./providers";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "HR Suite",
+  title: "HRMS - Human Resource Management System",
   description: "Modern HR Management System",
   icons: {
-    icon: "../../public/assets/hrms.png",
+    icon: "/assets/ico.png",
   },
 };
 

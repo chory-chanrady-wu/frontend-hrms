@@ -240,11 +240,12 @@ export default function AttendancePage() {
                 setShowModal(false);
                 resetForm();
                 setMarkAll(false);
-                Swal.fire(
-                  "Success",
-                  "Attendance marked for all employees.",
-                  "success",
-                );
+                Swal.fire({
+                  title: "Success",
+                  text: "Attendance marked for all employees.",
+                  icon: "success",
+                  customClass: { popup: "swal2-popup-theme" },
+                });
               }
             },
             onError: (error: unknown) => {
@@ -252,11 +253,12 @@ export default function AttendancePage() {
                 typeof error === "object" && error && "message" in error
                   ? (error as { message?: string }).message
                   : undefined;
-              Swal.fire(
-                "Error",
-                message || "Failed to mark attendance for all employees.",
-                "error",
-              );
+              Swal.fire({
+                title: "Error",
+                text: message || "Failed to mark attendance for all employees.",
+                icon: "error",
+                customClass: { popup: "swal2-popup-theme" },
+              });
             },
           });
         },
@@ -275,22 +277,24 @@ export default function AttendancePage() {
             onSuccess: () => {
               setShowModal(false);
               resetForm();
-              Swal.fire(
-                "Success",
-                "Attendance updated successfully.",
-                "success",
-              );
+              Swal.fire({
+                title: "Success",
+                text: "Attendance updated successfully.",
+                icon: "success",
+                customClass: { popup: "swal2-popup-theme" },
+              });
             },
             onError: (error: unknown) => {
               const message =
                 typeof error === "object" && error && "message" in error
                   ? (error as { message?: string }).message
                   : undefined;
-              Swal.fire(
-                "Error",
-                message || "Failed to update attendance.",
-                "error",
-              );
+              Swal.fire({
+                title: "Error",
+                text: message || "Failed to update attendance.",
+                icon: "error",
+                customClass: { popup: "swal2-popup-theme" },
+              });
             },
           },
         );
@@ -299,18 +303,24 @@ export default function AttendancePage() {
           onSuccess: () => {
             setShowModal(false);
             resetForm();
-            Swal.fire("Success", "Attendance marked successfully.", "success");
+            Swal.fire({
+              title: "Success",
+              text: "Attendance marked successfully.",
+              icon: "success",
+              customClass: { popup: "swal2-popup-theme" },
+            });
           },
           onError: (error: unknown) => {
             const message =
               typeof error === "object" && error && "message" in error
                 ? (error as { message?: string }).message
                 : undefined;
-            Swal.fire(
-              "Error",
-              message || "Failed to mark attendance.",
-              "error",
-            );
+            Swal.fire({
+              title: "Error",
+              text: message || "Failed to mark attendance.",
+              icon: "error",
+              customClass: { popup: "swal2-popup-theme" },
+            });
           },
         });
       }
@@ -332,22 +342,24 @@ export default function AttendancePage() {
           onSuccess: () => {
             setShowModal(false);
             resetForm();
-            Swal.fire(
-              "Deleted!",
-              "Attendance record has been deleted.",
-              "success",
-            );
+            Swal.fire({
+              title: "Deleted!",
+              text: "Attendance record has been deleted.",
+              icon: "success",
+              customClass: { popup: "swal2-popup-theme" },
+            });
           },
           onError: (error: unknown) => {
             const message =
               typeof error === "object" && error && "message" in error
                 ? (error as { message?: string }).message
                 : undefined;
-            Swal.fire(
-              "Error",
-              message || "Failed to delete attendance record.",
-              "error",
-            );
+            Swal.fire({
+              title: "Error",
+              text: message || "Failed to delete attendance record.",
+              icon: "error",
+              customClass: { popup: "swal2-popup-theme" },
+            });
           },
         });
       }

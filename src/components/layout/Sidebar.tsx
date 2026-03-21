@@ -18,14 +18,8 @@ import {
 export default function SidebarNavigation() {
   const pathname = usePathname();
   const auth = useAuth();
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    Overview: false,
-    People: false,
-    Operations: false,
-    Recruitment: false,
-    Reports: false,
-    Admin: false,
-  });
+  // Accordion: only one section open at a time
+  const [openSection, setOpenSection] = useState<string | null>(null);
   let userRole = "";
   if (typeof window !== "undefined") {
     const storedUser = localStorage.getItem("user");
@@ -102,19 +96,18 @@ export default function SidebarNavigation() {
               <SidebarGroup key={section.title} className="py-0.5 gap-0 mt-1">
                 <button
                   onClick={() =>
-                    setOpenSections((prev) => ({
-                      ...prev,
-                      [section.title]: !prev[section.title],
-                    }))
+                    setOpenSection((prev) =>
+                      prev === section.title ? null : section.title
+                    )
                   }
                   className="flex rounded-md w-full items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-widest bg-white/80 text-black transition-colors hover:text-white hover:bg-white/20 mb-1"
                 >
                   {section.title}
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-200 ${openSections[section.title] ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform duration-200 ${openSection === section.title ? "rotate-180" : ""}`}
                   />
                 </button>
-                {openSections[section.title] && (
+                {openSection === section.title && (
                   <SidebarMenu className="gap-1">
                     {visibleItems.map((item) => {
                       const Icon = item.icon;

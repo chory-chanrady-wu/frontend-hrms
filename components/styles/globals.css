@@ -1,3 +1,45 @@
+/* --- SweetAlert2 robust dark mode support --- */
+.dark .swal2-popup,
+html.dark .swal2-popup,
+body.dark .swal2-popup {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dark .swal2-title,
+html.dark .swal2-title,
+body.dark .swal2-title {
+  color: #f1f5f9 !important;
+}
+
+.dark .swal2-confirm,
+html.dark .swal2-confirm,
+body.dark .swal2-confirm {
+  background: #a78bfa !important;
+  color: #fff !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
+/* SweetAlert2 dark mode overrides */
+.swal2-dark-popup {
+  background: #1e293b !important; /* dark slate */
+  color: #f1f5f9 !important; /* light text */
+  border-radius: 1rem !important;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.5);
+}
+
+.swal2-dark-title {
+  color: #f1f5f9 !important;
+}
+
+.swal2-dark-confirm {
+  background: #a78bfa !important; /* violet-400 */
+  color: #fff !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
 @import "tw-animate-css/dist/tw-animate.css";
 /* SweetAlert2 theme for dark/light mode */
 .swal2-popup-theme {
