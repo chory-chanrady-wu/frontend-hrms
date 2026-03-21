@@ -5,13 +5,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useCreateAnnouncement } from "@/hooks/announcement-query";
-
+import { getAuthHeaders } from "@/lib/api";
 export default function AddAnnouncementPage() {
   const router = useRouter();
-  const employeeId =
-    typeof window !== "undefined"
-      ? Number(localStorage.getItem("employeeId")) || undefined
-      : undefined;
+  // Get employeeId from user object in localStorage
+  let employeeId: number | undefined = undefined;
+  if (typeof window !== "undefined") {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        employeeId = userObj?.employeeId || undefined;
+      } catch {
+        employeeId = undefined;
+      }
+    }
+  }
   const [form, setForm] = useState({
     title: "",
     content: "",
@@ -85,40 +94,39 @@ export default function AddAnnouncementPage() {
         return;
       }
     }
-    mutate(
-      {
-        title: form.title,
-        content: form.content,
-        priority: form.priority,
-        publishedAt: form.publishedAt
-          ? new Date(form.publishedAt).toISOString()
-          : undefined,
-        expiresAt: form.expiresAt
-          ? new Date(form.expiresAt).toISOString()
-          : undefined,
-        createdById: employeeId,
+    // Log payload and headers for debugging
+    const payload = {
+      title: form.title,
+      content: form.content,
+      priority: form.priority,
+      publishedAt: form.publishedAt
+        ? new Date(form.publishedAt).toISOString()
+        : undefined,
+      expiresAt: form.expiresAt
+        ? new Date(form.expiresAt).toISOString()
+        : undefined,
+      createdById: employeeId,
+    };
+    mutate(payload, {
+      onSuccess: () => {
+        themedSwal({
+          title: "Success",
+          text: "Announcement created successfully!",
+          icon: "success",
+        });
+        setTimeout(() => router.push("/dashboard/announcements"), 1200);
       },
-      {
-        onSuccess: () => {
-          themedSwal({
-            title: "Success",
-            text: "Announcement created successfully!",
-            icon: "success",
-          });
-          setTimeout(() => router.push("/dashboard/announcements"), 1200);
-        },
-        onError: (err: unknown) => {
-          themedSwal({
-            title: "Error",
-            text:
-              err instanceof Error
-                ? err.message
-                : "Failed to create announcement.",
-            icon: "error",
-          });
-        },
+      onError: (err: unknown) => {
+        themedSwal({
+          title: "Error",
+          text:
+            err instanceof Error
+              ? err.message
+              : "Failed to create announcement.",
+          icon: "error",
+        });
       },
-    );
+    });
   };
 
   return (
